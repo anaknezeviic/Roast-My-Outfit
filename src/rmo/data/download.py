@@ -12,6 +12,7 @@ import json
 import logging
 import os
 import shutil
+import sys
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -358,7 +359,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             return EXIT_NO_SOURCE
 
         if source is None:
-            print(_MANUAL_INSTRUCTIONS)
+            sys.stdout.write(_MANUAL_INSTRUCTIONS)
             return EXIT_NO_SOURCE
 
         log.info("staging from %s", source)
