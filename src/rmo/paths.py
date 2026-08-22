@@ -14,6 +14,7 @@ __all__ = [
     "data_root",
     "ensure_dir",
     "raw_dir",
+    "splits_dir",
     "docs_dir",
 ]
 
@@ -58,6 +59,11 @@ def ensure_dir(path: Path) -> Path:
 def raw_dir() -> Path:
     """Return ``<data_root>/raw`` — the dataset exactly as distributed."""
     return data_root() / "raw"
+
+
+def splits_dir() -> Path:
+    """Return ``<data_root>/processed/splits``."""
+    return data_root() / "processed" / "splits"
 
 
 def docs_dir() -> Path:
