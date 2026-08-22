@@ -12,6 +12,7 @@ from pathlib import Path
 
 import pytest
 
+from conftest import EXPECTED_IDS
 from rmo.imaging import load_image
 from rmo.paths import fixtures_dir, repo_root
 from rmo.schemas import (
@@ -28,12 +29,6 @@ from rmo.schemas import (
     Tone,
 )
 from rmo.scoring.palette import nearest_color_name
-
-EXPECTED_IDS = [
-    *(f"fixture_{index:03d}" for index in range(17)),
-    *(f"fx_adv_{index:02d}" for index in range(3)),
-    *(f"fx_deg_{index:02d}" for index in range(8)),
-]
 
 FLAGGED_CATEGORIES = [
     "body",
@@ -65,27 +60,6 @@ def _snapshot(root: Path) -> dict[str, bytes]:
         for path in sorted(root.rglob("*"))
         if path.is_file()
     }
-
-
-@pytest.fixture(scope="module")
-def descriptions() -> dict[str, OutfitDescription]:
-    """Return the committed descriptions, keyed by image id in file order."""
-    parsed = [OutfitDescription.model_validate_json(line) for line in _lines("outfit_descriptions.jsonl")]
-    return {record.image_id: record for record in parsed}
-
-
-@pytest.fixture(scope="module")
-def scores() -> dict[str, OutfitScore]:
-    """Return the committed scores, keyed by image id in file order."""
-    parsed = [OutfitScore.model_validate_json(line) for line in _lines("outfit_scores.jsonl")]
-    return {record.image_id: record for record in parsed}
-
-
-@pytest.fixture(scope="module")
-def roasts() -> dict[str, RoastOutput]:
-    """Return the committed roasts, keyed by image id in file order."""
-    parsed = [RoastOutput.model_validate_json(line) for line in _lines("roast_outputs.jsonl")]
-    return {record.image_id: record for record in parsed}
 
 
 @pytest.fixture(scope="module")
