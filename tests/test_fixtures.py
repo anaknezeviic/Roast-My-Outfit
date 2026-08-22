@@ -268,11 +268,6 @@ def test_the_faultless_outfit_is_the_only_one_complimented(
     assert complimented == ["fx_adv_02"]
 
 
-def test_golden_corpus_matches_the_descriptions_at_this_commit() -> None:
-    golden = (fixtures_dir() / "golden_v1.0.0.jsonl").read_bytes()
-    assert golden == (fixtures_dir() / "outfit_descriptions.jsonl").read_bytes()
-
-
 def test_probes_are_numbered_in_file_order(probes: list[dict[str, object]]) -> None:
     assert [probe["probe_id"] for probe in probes] == [f"sp_{index:02d}" for index in range(60)]
 

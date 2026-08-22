@@ -13,6 +13,8 @@ EXPECTED_IDS = [
     *(f"fx_deg_{index:02d}" for index in range(8)),
 ]
 
+SAMPLE_ID = "fixture_000"
+
 
 @pytest.fixture(scope="module")
 def descriptions() -> dict[str, OutfitDescription]:

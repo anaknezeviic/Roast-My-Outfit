@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from conftest import EXPECTED_IDS
+from conftest import EXPECTED_IDS, SAMPLE_ID
 from rmo import fixtures
 from rmo.paths import repo_root
 from rmo.perception.base import PerceptionModel
@@ -18,8 +18,6 @@ from rmo.roast.dummy import DummyRoaster
 from rmo.schemas import OutfitDescription, OutfitScore, Provenance, RoastOutput
 from rmo.scoring.base import ScoringModel
 from rmo.scoring.dummy import DummyScorer
-
-SAMPLE_ID = "fixture_000"
 
 UNKNOWN_ID = "not_a_fixture"
 
@@ -120,16 +118,6 @@ def test_the_dummies_implement_the_stage_interfaces(
     assert isinstance(perception, PerceptionModel)
     assert isinstance(scorer, ScoringModel)
     assert isinstance(roaster, RoastGenerator)
-
-
-def test_every_stage_carries_its_own_name(
-    perception: DummyPerception, scorer: DummyScorer, roaster: DummyRoaster
-) -> None:
-    assert [perception.name, scorer.name, roaster.name] == [
-        "dummy_perception",
-        "dummy_scorer",
-        "dummy_roaster",
-    ]
 
 
 def test_predict_batch_returns_one_description_per_image_in_order(

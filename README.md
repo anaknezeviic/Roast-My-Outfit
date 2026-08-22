@@ -1,7 +1,8 @@
 # Roast-My-Outfit
 
-Project scaffolding. Nothing is implemented yet beyond package installation, path resolution and
-dataset staging.
+An outfit photograph goes in, a structured description comes out, then a style-compatibility score,
+then a roast. The three stages are pluggable and meet at the records described in
+[docs/CONTRACTS.md](docs/CONTRACTS.md). Only fixture-replay stage implementations exist so far.
 
 ## Requirements
 
@@ -22,6 +23,15 @@ On macOS or Linux, `source .venv/bin/activate` instead.
 ```powershell
 pytest -q
 ```
+
+## Pipeline
+
+```powershell
+python -m rmo.pipeline --image data/fixtures/images/fixture_000.png
+```
+
+One `RoastOutput` is written to stdout as JSON. Any stage left unregistered falls back to its
+fixture-replay model. Add `--json` to get the description and the score alongside the roast.
 
 ## Dataset
 
@@ -53,6 +63,7 @@ never committed.
 src/rmo/     package
 scripts/     CLI wrappers
 tests/       pytest
+docs/        record and registry contracts
 data/        gitignored
 ```
 
