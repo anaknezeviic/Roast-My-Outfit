@@ -121,8 +121,8 @@ def test_describe_reports_counts(source):
         record.relpath: download.describe(record)
         for record in download.inventory(paths.raw_dir())
     }
-    assert "3 files" in summaries["images/"] or "6 files" in summaries["images/"]
-    assert "lines" in summaries["labels/fabric_ann.txt"]
+    assert summaries["images/"].endswith("6 files")
+    assert "1 lines" in summaries["labels/fabric_ann.txt"]
 
 
 def test_verify_writes_no_documents(source):
