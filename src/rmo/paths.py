@@ -14,7 +14,6 @@ __all__ = [
     "data_root",
     "ensure_dir",
     "raw_dir",
-    "docs_dir",
 ]
 
 _ROOT_SENTINEL = "pyproject.toml"
@@ -58,8 +57,3 @@ def ensure_dir(path: Path) -> Path:
 def raw_dir() -> Path:
     """Return ``<data_root>/raw`` — the dataset exactly as distributed."""
     return data_root() / "raw"
-
-
-def docs_dir() -> Path:
-    """Return ``<repo_root>/docs``."""
-    return repo_root() / "docs"
