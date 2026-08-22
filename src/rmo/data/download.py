@@ -197,7 +197,8 @@ def inspect_file(path: Path, root: Path) -> FileInfo:
 
     if path.suffix.lower() == ".json":
         try:
-            with path.open("r", encoding="utf-8") as handle:
+            # utf-8-sig so a mirror that ships a BOM still parses
+            with path.open("r", encoding="utf-8-sig") as handle:
                 payload = json.load(handle)
         except (json.JSONDecodeError, UnicodeDecodeError) as exc:
             log.error("could not parse %s as JSON: %s", relpath, exc)
@@ -213,7 +214,7 @@ def inspect_file(path: Path, root: Path) -> FileInfo:
     if path.suffix.lower() in {".txt", ".csv", ".jsonl"}:
         lines = 0
         first_line = ""
-        with path.open("r", encoding="utf-8", errors="replace") as handle:
+        with path.open("r", encoding="utf-8-sig", errors="replace") as handle:
             for index, line in enumerate(handle):
                 if index == 0:
                     first_line = line.rstrip("\n")[:_SAMPLE_CHARS]

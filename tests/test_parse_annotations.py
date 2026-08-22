@@ -105,6 +105,19 @@ def test_blank_lines_are_ignored(tmp_path):
     assert len(annotations.parse_fabric(path)) == 2
 
 
+def test_utf8_bom_does_not_corrupt_the_first_image_id(tmp_path):
+    path = tmp_path / "fabric_ann.txt"
+    path.write_bytes(b"\xef\xbb\xbfimg_0.jpg 0 1 2\nimg_1.jpg 1 2 3\n")
+    frame = annotations.parse_fabric(path)
+    assert list(frame["image_id"]) == ["img_0", "img_1"]
+
+
+def test_tabs_and_crlf_are_accepted(tmp_path):
+    path = tmp_path / "fabric_ann.txt"
+    path.write_bytes(b"img_0.jpg\t0\t1\t2\r\nimg_1.jpg 1 2 3\r\n")
+    assert list(annotations.parse_fabric(path)["image_id"]) == ["img_0", "img_1"]
+
+
 def test_wrong_field_count_raises(tmp_path):
     path = write(tmp_path / "fabric_ann.txt", "img_0.jpg 0 1\n")
     with pytest.raises(annotations.AnnotationError, match="expected 4 fields"):

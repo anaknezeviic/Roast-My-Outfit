@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import itertools
+
+import pandas as pd
 import pytest
 
 from rmo import paths
-from rmo.splits import SPLIT_NAMES, group_key_for, load_split
+from rmo.splits import SPLIT_NAMES, group_key_for, load_split, write_splits
 
 
 @pytest.mark.parametrize(
@@ -61,3 +64,61 @@ def test_load_split_reads_stems_and_drops_blank_lines(tmp_path, monkeypatch) -> 
 
 def test_split_names_are_the_three_the_loader_accepts() -> None:
     assert SPLIT_NAMES == ("train", "val", "test")
+
+
+def test_write_splits_rejects_missing_stratification_values(tmp_path) -> None:
+    frame = pd.DataFrame(
+        [
+            {
+                "image_id": "WOMEN-Dress-id_00000001-01_1_front",
+                "gender": None,
+                "category_from_filename": "Dress",
+                "is_full_body": True,
+            }
+        ]
+    )
+
+    with pytest.raises(ValueError, match="missing gender or category"):
+        write_splits(frame, tmp_path)
+
+
+def test_written_splits_are_deterministic_grouped_and_lf_terminated(tmp_path) -> None:
+    records = []
+    for number in range(1, 15):
+        gender = "MEN" if number % 2 else "WOMEN"
+        category = "Denim" if number % 2 else "Blouses_Shirts"
+        for shot in ("front", "side"):
+            records.append(
+                {
+                    "image_id": f"{gender}-{category}-id_{number:08d}-01_1_{shot}",
+                    "gender": gender.lower(),
+                    "category_from_filename": category,
+                    "is_full_body": True,
+                }
+            )
+    records.append(
+        {
+            "image_id": "invalid",
+            "gender": "women",
+            "category_from_filename": "Dress",
+            "is_full_body": True,
+        }
+    )
+    frame = pd.DataFrame(records)
+
+    first = write_splits(frame, tmp_path)
+    first_contents = {name: (tmp_path / f"{name}.txt").read_bytes() for name in first}
+    second = write_splits(frame, tmp_path)
+
+    assert first == second
+    assert "invalid" not in set().union(*first.values())
+    groups = {
+        name: {group_key_for(image_id) for image_id in image_ids}
+        for name, image_ids in first.items()
+    }
+    for first_name, second_name in itertools.combinations(SPLIT_NAMES, 2):
+        assert groups[first_name].isdisjoint(groups[second_name])
+    for name, content in first_contents.items():
+        assert content == (tmp_path / f"{name}.txt").read_bytes()
+        assert content.endswith(b"\n")
+        assert b"\r\n" not in content

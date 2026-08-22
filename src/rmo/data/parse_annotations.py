@@ -84,6 +84,9 @@ _FABRIC_TOKENS = ("fabric",)
 _PATTERN_TOKENS = ("pattern", "color", "colour", "texture")
 _KINDS = ("shape", "fabric", "pattern")
 
+# some mirrors ship these files with a BOM, which would otherwise land inside the first image id
+_ENCODING = "utf-8-sig"
+
 
 def _image_id(name: str) -> str:
     """Return the filename stem, which is the join key used by every later stage."""
@@ -92,7 +95,7 @@ def _image_id(name: str) -> str:
 
 def _rows(path: Path, width: int) -> Iterator[tuple[int, str, list[str]]]:
     """Yield ``(line number, image name, codes)`` for every non-blank line."""
-    with open(path, encoding="utf-8") as handle:
+    with open(path, encoding=_ENCODING) as handle:
         for number, line in enumerate(handle, start=1):
             if not line.strip():
                 continue
@@ -168,7 +171,7 @@ _PARSERS = {"shape": parse_shape, "fabric": parse_fabric, "pattern": parse_patte
 
 def _first_row_width(path: Path) -> int:
     """Return the field count of the first non-blank line, or 0 when there is none."""
-    with open(path, encoding="utf-8") as handle:
+    with open(path, encoding=_ENCODING) as handle:
         for line in handle:
             if line.strip():
                 return len(line.split())
