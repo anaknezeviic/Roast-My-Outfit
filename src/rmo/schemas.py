@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from collections import Counter
 from enum import Enum
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -26,6 +26,14 @@ __all__ = [
     "NEUTRAL_COLORS",
     "Garment",
     "OutfitDescription",
+    "IssueSeverity",
+    "IssueCode",
+    "NonEmptyStr",
+    "SubScores",
+    "Issue",
+    "OutfitScore",
+    "Tone",
+    "RoastOutput",
 ]
 
 SCHEMA_VERSION = "1.0.0"
@@ -213,3 +221,112 @@ class OutfitDescription(BaseModel):
     def by_slot(self, slot: GarmentSlot) -> list[Garment]:
         """Return the garments filling one slot, in garment order."""
         return [garment for garment in self.garments if garment.slot == slot]
+
+
+class IssueSeverity(str, Enum):
+    """How much weight an issue carries when the worst ones are picked."""
+
+    info = "info"
+    minor = "minor"
+    major = "major"
+
+
+class IssueCode(str, Enum):
+    """Named style problem a scoring model can report."""
+
+    hue_clash = "hue_clash"
+    too_many_colors = "too_many_colors"
+    low_contrast = "low_contrast"
+    monochrome_flat = "monochrome_flat"
+    pattern_clash = "pattern_clash"
+    formality_mismatch = "formality_mismatch"
+    season_mismatch = "season_mismatch"
+    fabric_mismatch = "fabric_mismatch"
+    proportion_imbalance = "proportion_imbalance"
+    missing_footwear = "missing_footwear"
+    accessory_overload = "accessory_overload"
+    other = "other"
+
+
+_SEVERITY_RANK: dict[IssueSeverity, int] = {
+    IssueSeverity.major: 0,
+    IssueSeverity.minor: 1,
+    IssueSeverity.info: 2,
+}
+
+NonEmptyStr = Annotated[str, Field(min_length=1)]
+
+
+class SubScores(BaseModel):
+    """Per-axis breakdown behind an overall outfit score."""
+
+    model_config = model_config
+
+    color_harmony: float = Field(ge=0.0, le=100.0, strict=True)
+    formality_consistency: float = Field(ge=0.0, le=100.0, strict=True)
+    seasonality: float = Field(ge=0.0, le=100.0, strict=True)
+    proportion: float = Field(ge=0.0, le=100.0, strict=True)
+
+
+class Issue(BaseModel):
+    """One style problem found in an outfit."""
+
+    model_config = model_config
+
+    code: IssueCode
+    severity: IssueSeverity = IssueSeverity.minor
+    message: str = Field(min_length=1, max_length=280)
+    garment_refs: list[NonEmptyStr] = Field(default_factory=list)
+
+
+class OutfitScore(BaseModel):
+    """What a scoring model concluded about one outfit, higher being better."""
+
+    model_config = model_config
+
+    image_id: str = Field(min_length=1)
+    overall: float = Field(ge=0.0, le=100.0, strict=True)
+    subscores: SubScores
+    issues: list[Issue] = Field(default_factory=list)
+    provenance: Provenance
+    source_model: str = Field(min_length=1)
+    schema_version: str = SCHEMA_VERSION
+
+    def worst_issues(self, limit: int = 3) -> list[Issue]:
+        """Return copies of the most severe issues, ties broken so the order is stable."""
+        ranked = sorted(
+            self.issues,
+            key=lambda issue: (
+                _SEVERITY_RANK[issue.severity],
+                issue.code.value,
+                tuple(issue.garment_refs),
+            ),
+        )
+        return [issue.model_copy(deep=True) for issue in ranked[:limit]]
+
+
+class Tone(str, Enum):
+    """Register the roast text is written in."""
+
+    gentle = "gentle"
+    playful = "playful"
+    savage = "savage"
+    compliment = "compliment"
+
+
+class RoastOutput(BaseModel):
+    """The text the product returns for one outfit photograph."""
+
+    model_config = model_config
+
+    image_id: str = Field(min_length=1)
+    roast: str = Field(min_length=1, max_length=1000)
+    suggestions: list[Annotated[str, Field(min_length=1, max_length=280)]] = Field(
+        min_length=1, max_length=5
+    )
+    tone: Tone = Tone.playful
+    grounded_garments: list[NonEmptyStr] = Field(default_factory=list)
+    safety_flags: list[NonEmptyStr] = Field(default_factory=list)
+    provenance: Provenance
+    source_model: str = Field(min_length=1)
+    schema_version: str = SCHEMA_VERSION
