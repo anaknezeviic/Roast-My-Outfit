@@ -1,0 +1,17 @@
+-e .
+
+numpy>=1.26
+pandas>=2.1
+pyarrow>=15.0
+pydantic>=2.6
+PyYAML>=6.0
+pillow>=10.2
+scikit-learn>=1.4
+krippendorff>=0.6
+matplotlib>=3.8
+seaborn>=0.13
+jupyterlab>=4.1
+ipywidgets>=8.1
+nbdime>=4.0
+tqdm>=4.66
+pytest>=8.0
