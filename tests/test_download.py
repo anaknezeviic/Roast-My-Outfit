@@ -115,12 +115,20 @@ def test_inventory_summarises_bulk_directories(source):
     assert records["parsing/"].sample == "3 files"
 
 
-def test_manifest_block_is_replaced_not_duplicated(source):
+def test_describe_reports_counts(source):
+    download.main(["--all", "--from", str(source)])
+    summaries = {
+        record.relpath: download.describe(record)
+        for record in download.inventory(paths.raw_dir())
+    }
+    assert "3 files" in summaries["images/"] or "6 files" in summaries["images/"]
+    assert "lines" in summaries["labels/fabric_ann.txt"]
+
+
+def test_verify_writes_no_documents(source):
     download.main(["--all", "--from", str(source)])
     download.main(["--verify"])
-    text = (paths.docs_dir() / "DATASET.md").read_text(encoding="utf-8")
-    assert text.count(download._MANIFEST_BEGIN) == 1
-    assert text.count(download._MANIFEST_END) == 1
+    assert not (paths.repo_root() / "docs").exists()
 
 
 

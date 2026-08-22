@@ -15,7 +15,6 @@ __all__ = [
     "ensure_dir",
     "raw_dir",
     "splits_dir",
-    "docs_dir",
 ]
 
 _ROOT_SENTINEL = "pyproject.toml"
@@ -64,8 +63,3 @@ def raw_dir() -> Path:
 def splits_dir() -> Path:
     """Return ``<data_root>/processed/splits``."""
     return data_root() / "processed" / "splits"
-
-
-def docs_dir() -> Path:
-    """Return ``<repo_root>/docs``."""
-    return repo_root() / "docs"

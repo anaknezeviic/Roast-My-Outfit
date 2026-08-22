@@ -33,11 +33,11 @@ only has to be done once. Take the labels archive and the captions JSON (~11.5 M
 python scripts/download_data.py --from C:\datasets\deepfashion-mm
 ```
 
-Files are copied into `data/raw/` (gitignored) and an inventory table is written to
-`docs/DATASET.md`.
+Files are copied into `data/raw/` (gitignored) and a summary of what is staged is written to the
+log.
 
 ```powershell
-python scripts/download_data.py --verify                       # inventory only, no copying
+python scripts/download_data.py --verify                       # report what is staged
 python scripts/download_data.py --images --limit 200 --from .  # small image sample
 python scripts/download_data.py --all --from .                 # everything, ~5.5 GB
 ```
@@ -54,7 +54,6 @@ src/rmo/     package
 scripts/     CLI wrappers
 tests/       pytest
 data/        gitignored
-docs/        DATASET.md, written by the downloader
 ```
 
 | Environment variable | Effect |
