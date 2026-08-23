@@ -17,6 +17,7 @@ __all__ = [
     "raw_dir",
     "parsing_dir",
     "splits_dir",
+    "fixtures_dir",
 ]
 
 _ROOT_SENTINEL = "pyproject.toml"
@@ -73,5 +74,10 @@ def parsing_dir() -> Path:
 
 
 def splits_dir() -> Path:
-    """Return ``<data_root>/processed/splits``."""
+    """Return ``<data_root>/processed/splits`` — the frozen group-aware splits."""
     return data_root() / "processed" / "splits"
+
+
+def fixtures_dir() -> Path:
+    """Return ``<data_root>/fixtures`` — the committed fixture corpus."""
+    return data_root() / "fixtures"
