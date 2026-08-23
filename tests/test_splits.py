@@ -2,13 +2,27 @@
 
 from __future__ import annotations
 
+import hashlib
 import itertools
+import json
+import re
+from pathlib import Path
 
 import pandas as pd
 import pytest
 
 from rmo import paths
-from rmo.splits import SPLIT_NAMES, group_key_for, load_split, write_splits
+from rmo.splits import (
+    MANIFEST_NAME,
+    SPLIT_NAMES,
+    SPLIT_SEED,
+    assert_split_disjoint,
+    group_key_for,
+    load_split,
+    write_splits,
+)
+
+_BARE_TOKEN = re.compile(r"id_\d{8}")
 
 
 @pytest.mark.parametrize(
@@ -111,6 +125,10 @@ def test_written_splits_are_deterministic_grouped_and_lf_terminated(tmp_path) ->
     second = write_splits(frame, tmp_path)
 
     assert first == second
+    assert {name: (tmp_path / f"{name}.txt").read_bytes() for name in second} == first_contents
+    for content in first_contents.values():
+        assert b"\r" not in content
+        assert content.endswith(b"\n")
     assert "invalid" not in set().union(*first.values())
     groups = {
         name: {group_key_for(image_id) for image_id in image_ids}
@@ -118,7 +136,72 @@ def test_written_splits_are_deterministic_grouped_and_lf_terminated(tmp_path) ->
     }
     for first_name, second_name in itertools.combinations(SPLIT_NAMES, 2):
         assert groups[first_name].isdisjoint(groups[second_name])
-    for name, content in first_contents.items():
-        assert content == (tmp_path / f"{name}.txt").read_bytes()
-        assert content.endswith(b"\n")
-        assert b"\r\n" not in content
+
+
+def test_the_manifest_describes_the_files_that_were_written(tmp_path) -> None:
+    records = []
+    for number in range(1, 15):
+        gender = "MEN" if number % 2 else "WOMEN"
+        category = "Denim" if number % 2 else "Blouses_Shirts"
+        records.append(
+            {
+                "image_id": f"{gender}-{category}-id_{number:08d}-01_1_front",
+                "gender": gender.lower(),
+                "category_from_filename": category,
+                "is_full_body": True,
+            }
+        )
+    splits = write_splits(pd.DataFrame(records), tmp_path)
+
+    manifest = json.loads((tmp_path / MANIFEST_NAME).read_text(encoding="utf-8"))
+    assert manifest["split_seed"] == SPLIT_SEED
+    assert manifest["n_groups"] == 14
+    assert manifest["counts"] == {name: len(splits[name]) for name in SPLIT_NAMES}
+    assert manifest["sha256"] == {
+        f"{name}.txt": hashlib.sha256((tmp_path / f"{name}.txt").read_bytes()).hexdigest()
+        for name in SPLIT_NAMES
+    }
+
+
+def _committed_splits() -> dict[str, Path]:
+    """Return the committed split files, skipping while they have not been produced."""
+    directory = paths.splits_dir()
+    files = {name: directory / f"{name}.txt" for name in SPLIT_NAMES}
+    absent = sorted(path.name for path in files.values() if not path.is_file())
+    if absent:
+        pytest.skip(f"the splits have not been built yet: {', '.join(absent)}")
+    return files
+
+
+def test_the_committed_splits_share_no_garment_group() -> None:
+    _committed_splits()
+    assert_split_disjoint()
+
+
+def test_the_committed_splits_use_the_product_prefix_not_the_bare_token() -> None:
+    files = _committed_splits()
+    image_ids = set().union(*(load_split(name) for name in files))
+    by_prefix = {group_key_for(image_id) for image_id in image_ids}
+    by_token = {_BARE_TOKEN.search(image_id).group(0) for image_id in image_ids}
+
+    assert len(by_prefix) > len(by_token), (
+        "the group key collapsed to the bare id_XXXXXXXX token, which merges "
+        "unrelated products that share a token across gender and category."
+    )
+    assert len(by_prefix) > len(image_ids) // 2
+
+
+def test_the_committed_splits_still_hash_to_the_manifest() -> None:
+    files = _committed_splits()
+    manifest_path = paths.splits_dir() / MANIFEST_NAME
+    assert manifest_path.is_file(), f"{MANIFEST_NAME} is missing beside the split files."
+
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert manifest["split_seed"] == SPLIT_SEED
+    assert manifest["n_groups"] == len(
+        {group_key_for(image_id) for name in files for image_id in load_split(name)}
+    )
+    assert manifest["sha256"] == {
+        f"{name}.txt": hashlib.sha256(path.read_bytes()).hexdigest()
+        for name, path in files.items()
+    }, "the splits were regenerated; every metric reported against them is stale."

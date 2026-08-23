@@ -13,6 +13,7 @@ MUST_BE_COMMITTABLE = [
     "data/fixtures/images/fixture_000.png",
     "data/processed/splits/train.txt",
     "data/processed/splits/MANIFEST.json",
+    "data/processed/predictions/cnn_val.jsonl",
     "data/processed/gold_harmony.csv",
     "models/README.md",
 ]

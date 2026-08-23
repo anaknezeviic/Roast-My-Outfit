@@ -1,0 +1,15 @@
+{
+  "counts": {
+    "test": 1815,
+    "train": 9071,
+    "val": 1815
+  },
+  "git_sha": "99db1e461a1582dbc01e2c38338c7fab4fa22a3c",
+  "n_groups": 6932,
+  "sha256": {
+    "test.txt": "580b1f0e3195549997fef601ea8c29d6537fec8587d397de802b364b29029e64",
+    "train.txt": "1d4fde61c2dd90dd9ace762e619b772c202a0d0b2e810b8356137afbe2fa3622",
+    "val.txt": "1aa32e502079e14009e191d971a8a21322ea0815773647948a7370aba1c17ecf"
+  },
+  "split_seed": 20260101
+}

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 import pytest
@@ -172,7 +173,27 @@ def test_parse_label_dir_returns_all_three(labels):
     assert all(len(frame) == 2 for frame in tables.values())
 
 
-def test_parse_label_dir_rejects_misaligned_files(labels):
+def test_parse_label_dir_rejects_fabric_and_pattern_covering_different_images(labels):
     write(labels / "fabric_ann.txt", "img_0.jpg 0 1 2\nimg_7.jpg 1 2 3\n")
-    with pytest.raises(annotations.AnnotationError, match="missing"):
+    with pytest.raises(annotations.AnnotationError, match="cover different images"):
         annotations.parse_label_dir(labels)
+
+
+def test_parse_label_dir_rejects_a_shape_row_with_no_texture_row(labels):
+    write(
+        labels / "shape_anno_all.txt",
+        f"{SHAPE_ROW}\n{SHAPE_NA_ROW}\nimg_7.jpg 0 0 0 0 0 0 0 0 0 0 0 0\n",
+    )
+    with pytest.raises(annotations.AnnotationError, match="annotates 1 images"):
+        annotations.parse_label_dir(labels)
+
+
+def test_parse_label_dir_accepts_shape_covering_only_some_images(labels, caplog):
+    write(labels / "shape_anno_all.txt", f"{SHAPE_ROW}\n")
+
+    with caplog.at_level(logging.INFO, logger="rmo.data.parse_annotations"):
+        tables = annotations.parse_label_dir(labels)
+
+    assert len(tables["shape"]) == 1
+    assert len(tables["fabric"]) == 2
+    assert "1 of them without a shape annotation" in caplog.text

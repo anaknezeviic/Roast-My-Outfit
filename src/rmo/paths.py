@@ -14,6 +14,7 @@ __all__ = [
     "data_root",
     "ensure_dir",
     "raw_dir",
+    "processed_dir",
     "splits_dir",
     "fixtures_dir",
 ]
@@ -61,9 +62,14 @@ def raw_dir() -> Path:
     return data_root() / "raw"
 
 
+def processed_dir() -> Path:
+    """Return ``<data_root>/processed`` — tables derived from the raw dataset."""
+    return data_root() / "processed"
+
+
 def splits_dir() -> Path:
     """Return ``<data_root>/processed/splits`` — the frozen group-aware splits."""
-    return data_root() / "processed" / "splits"
+    return processed_dir() / "splits"
 
 
 def fixtures_dir() -> Path:

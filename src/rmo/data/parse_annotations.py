@@ -203,19 +203,31 @@ def find_label_files(label_dir: Path) -> dict[str, Path]:
 
 
 def parse_label_dir(label_dir: Path) -> dict[str, pd.DataFrame]:
-    """Parse all three label files and confirm they describe the same images."""
+    """Parse all three label files and confirm they describe a consistent image set."""
     files = find_label_files(label_dir)
     tables = {kind: _PARSERS[kind](files[kind]) for kind in _KINDS}
 
-    reference = set(tables["shape"]["image_id"])
-    for kind in ("fabric", "pattern"):
-        other = set(tables[kind]["image_id"])
-        if other != reference:
-            raise AnnotationError(
-                f"{files[kind].name} covers {len(other)} images against "
-                f"{len(reference)} in {files['shape'].name}: "
-                f"{len(reference - other)} missing, {len(other - reference)} unexpected."
-            )
+    fabric = set(tables["fabric"]["image_id"])
+    pattern = set(tables["pattern"]["image_id"])
+    if fabric != pattern:
+        raise AnnotationError(
+            f"{files['fabric'].name} and {files['pattern'].name} cover different images: "
+            f"{len(fabric - pattern)} only in the first, "
+            f"{len(pattern - fabric)} only in the second."
+        )
 
-    log.info("parsed %d images from %s", len(reference), label_dir)
+    shape = set(tables["shape"]["image_id"])
+    surplus = shape - fabric
+    if surplus:
+        raise AnnotationError(
+            f"{files['shape'].name} annotates {len(surplus)} images that "
+            f"{files['fabric'].name} does not, including {min(surplus)!r}."
+        )
+
+    log.info(
+        "parsed %d images from %s, %d of them without a shape annotation",
+        len(fabric),
+        label_dir,
+        len(fabric - shape),
+    )
     return tables

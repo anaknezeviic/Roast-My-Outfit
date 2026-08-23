@@ -57,6 +57,21 @@ Exit codes: `0` success, `2` no source directory, `3` a requested group matched 
 The dataset is non-commercial research use only and may not be redistributed, so `data/raw/` is
 never committed.
 
+## Outfit table and splits
+
+Once the labels, captions and parsing masks are staged, build the canonical table and the
+group-aware splits:
+
+```powershell
+python scripts/build_dataset.py                  # data/processed/outfits.parquet
+python scripts/build_dataset.py --splits         # also train/val/test and their manifest
+```
+
+Splits are keyed by product, not by image, so every shot of one garment lands on the same side.
+They are written once and committed; `--splits` refuses to overwrite them, because every reported
+metric is keyed to the files that exist. Exit codes: `0` success, `2` unusable input, `3` splits
+already exist.
+
 ## Layout
 
 ```
@@ -64,7 +79,7 @@ src/rmo/     package
 scripts/     CLI wrappers
 tests/       pytest
 docs/        record and registry contracts
-data/        gitignored
+data/        fixtures and splits committed, the corpus gitignored
 ```
 
 | Environment variable | Effect |

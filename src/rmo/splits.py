@@ -6,9 +6,12 @@ product lands on the same side of the split.
 
 from __future__ import annotations
 
+import hashlib
 import itertools
+import json
 import logging
 import re
+import subprocess
 from pathlib import Path
 from uuid import uuid4
 
@@ -22,6 +25,7 @@ log = logging.getLogger(__name__)
 __all__ = [
     "SPLIT_SEED",
     "SPLIT_NAMES",
+    "MANIFEST_NAME",
     "group_key_for",
     "load_split",
     "assert_split_disjoint",
@@ -32,6 +36,8 @@ __all__ = [
 SPLIT_SEED: int = 20260101
 
 SPLIT_NAMES: tuple[str, ...] = ("train", "val", "test")
+
+MANIFEST_NAME = "MANIFEST.json"
 
 _GROUP_TOKEN = re.compile(r"id_\d{8}")
 
@@ -68,12 +74,55 @@ def assert_split_disjoint() -> None:
 def _write_ids(path: Path, image_ids: set[str]) -> None:
     """Write sorted image stems with LF endings and a trailing newline."""
     content = "".join(f"{image_id}\n" for image_id in sorted(image_ids))
+    _write_bytes(path, content.encode("utf-8"))
+
+
+def _write_bytes(path: Path, payload: bytes) -> None:
+    """Replace ``path`` atomically so a failed write cannot leave a partial split."""
     temporary = path.with_name(f".{path.name}.{uuid4().hex}.tmp")
     try:
-        temporary.write_bytes(content.encode("utf-8"))
+        temporary.write_bytes(payload)
         temporary.replace(path)
     finally:
         temporary.unlink(missing_ok=True)
+
+
+def _git_sha() -> str | None:
+    """Return the commit the splits were generated at, or None outside a work tree."""
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=paths.repo_root(),
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    return result.stdout.strip() or None
+
+
+def _write_manifest(directory: Path, splits: dict[str, set[str]]) -> None:
+    """Record counts, group total, seed, commit and a digest per split file."""
+    groups = {
+        group_key_for(image_id)
+        for image_ids in splits.values()
+        for image_id in image_ids
+    }
+    manifest = {
+        "split_seed": SPLIT_SEED,
+        "n_groups": len(groups),
+        "counts": {name: len(splits[name]) for name in SPLIT_NAMES},
+        "sha256": {
+            f"{name}.txt": hashlib.sha256(
+                (directory / f"{name}.txt").read_bytes()
+            ).hexdigest()
+            for name in SPLIT_NAMES
+        },
+        "git_sha": _git_sha(),
+    }
+    payload = json.dumps(manifest, indent=2, sort_keys=True) + "\n"
+    _write_bytes(directory / MANIFEST_NAME, payload.encode("utf-8"))
 
 
 def write_splits(
@@ -106,8 +155,13 @@ def write_splits(
     has_blank = metadata.apply(lambda column: column.astype(str).str.strip().eq("")).any().any()
     if metadata.isna().any().any() or has_blank:
         raise ValueError("Full-body rows have missing gender or category values.")
-    if eligible["group"].nunique() < 7:
-        raise ValueError("At least seven product groups are required to create splits.")
+    groups_available = eligible["group"].nunique()
+    if groups_available < 7:
+        raise ValueError(
+            f"Only {groups_available} full-body product groups are available and the "
+            "split needs at least seven. Stage data/raw/parsing, which is what marks "
+            "a row full-body."
+        )
 
     eligible["stratum"] = (
         eligible["gender"].astype(str)
@@ -138,6 +192,7 @@ def write_splits(
     destination = paths.ensure_dir(split_dir or paths.splits_dir())
     for name, image_ids in splits.items():
         _write_ids(destination / f"{name}.txt", image_ids)
+    _write_manifest(destination, splits)
     log.info(
         "wrote %d train, %d val and %d test image IDs to %s",
         len(splits["train"]),

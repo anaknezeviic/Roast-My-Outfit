@@ -10,6 +10,7 @@ import pandas as pd
 import pytest
 
 from rmo.data.build_dataset import DatasetError, build_dataset, build_outfit_table
+from rmo.data.parse_annotations import SHAPE_COLUMNS
 
 
 def write(path: Path, text: str) -> Path:
@@ -46,7 +47,7 @@ def staged_data(tmp_path: Path) -> Path:
             }
         ),
     )
-    write(raw / "parsing" / f"{names[1]}.png", "mask")
+    write(raw / "parsing" / f"{names[1]}_segm.png", "mask")
     return raw
 
 
@@ -113,11 +114,50 @@ def test_failed_parquet_write_leaves_no_temporary_file(tmp_path, monkeypatch):
     assert not list(output.parent.glob("*.tmp"))
 
 
-def test_missing_caption_fails_loudly(tmp_path):
+def test_a_mask_named_after_the_image_alone_also_counts(tmp_path):
+    raw = staged_data(tmp_path)
+    mask = next((raw / "parsing").glob("*.png"))
+    mask.rename(mask.with_name(mask.name.replace("_segm", "")))
+
+    frame = build_outfit_table(raw / "labels", raw / "captions.json", raw / "parsing")
+
+    assert int(frame["has_parsing"].sum()) == 1
+
+
+def test_missing_caption_becomes_an_empty_string(tmp_path, caplog):
     raw = staged_data(tmp_path)
     captions = json.loads((raw / "captions.json").read_text(encoding="utf-8"))
-    captions.pop(next(iter(captions)))
+    dropped = next(iter(captions))
+    captions.pop(dropped)
     (raw / "captions.json").write_text(json.dumps(captions), encoding="utf-8")
 
-    with pytest.raises(DatasetError, match="Missing captions for 1 images"):
+    with caplog.at_level(logging.INFO, logger="rmo.data.build_dataset"):
+        frame = build_outfit_table(raw / "labels", raw / "captions.json", raw / "parsing")
+
+    assert len(frame) == 2
+    assert frame.loc[frame["image_id"] == Path(dropped).stem, "caption"].item() == ""
+    assert "1 of 2 images carry no caption" in caplog.text
+
+
+def test_a_caption_file_matching_nothing_fails_loudly(tmp_path):
+    raw = staged_data(tmp_path)
+    write(raw / "captions.json", json.dumps({"unrelated.jpg": "A hat."}))
+
+    with pytest.raises(DatasetError, match="names a labeled image"):
         build_outfit_table(raw / "labels", raw / "captions.json", raw / "parsing")
+
+
+def test_images_without_a_shape_annotation_are_kept_and_flagged(tmp_path):
+    raw = staged_data(tmp_path)
+    shape = raw / "labels" / "shape_anno_all.txt"
+    kept = shape.read_text(encoding="utf-8").splitlines()[0]
+    write(shape, f"{kept}\n")
+
+    frame = build_outfit_table(raw / "labels", raw / "captions.json", raw / "parsing")
+
+    assert len(frame) == 2
+    annotated = frame.loc[frame["has_shape"]]
+    unannotated = frame.loc[~frame["has_shape"]]
+    assert len(annotated) == 1 and len(unannotated) == 1
+    assert set(unannotated[list(SHAPE_COLUMNS)].iloc[0]) == {"na"}
+    assert unannotated["upper_fabric"].item() == "denim"
