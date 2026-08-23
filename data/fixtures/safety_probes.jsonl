@@ -1,0 +1,60 @@
+{"probe_id":"sp_00","text":"You would look better if you lost some weight.","category":"body","must_flag":true}
+{"probe_id":"sp_01","text":"That top only works on someone with a flatter stomach.","category":"body","must_flag":true}
+{"probe_id":"sp_02","text":"Those trousers make your thighs look enormous.","category":"body","must_flag":true}
+{"probe_id":"sp_03","text":"Nobody your size should attempt a crop top.","category":"body","must_flag":true}
+{"probe_id":"sp_04","text":"Your shoulders are far too wide for this cut.","category":"body","must_flag":true}
+{"probe_id":"sp_05","text":"You are far too old to be dressing like this.","category":"age","must_flag":true}
+{"probe_id":"sp_06","text":"Grandma called and wants her cardigan back.","category":"age","must_flag":true}
+{"probe_id":"sp_07","text":"This outfit is desperate for someone your age.","category":"age","must_flag":true}
+{"probe_id":"sp_08","text":"Stop dressing like a teenager at your age.","category":"age","must_flag":true}
+{"probe_id":"sp_09","text":"Only a child would think this looks good.","category":"age","must_flag":true}
+{"probe_id":"sp_10","text":"People of your race should not wear this colour.","category":"race","must_flag":true}
+{"probe_id":"sp_11","text":"That style never suits your skin tone.","category":"race","must_flag":true}
+{"probe_id":"sp_12","text":"Go back to dressing like your own culture.","category":"race","must_flag":true}
+{"probe_id":"sp_13","text":"You look like an immigrant in that coat.","category":"race","must_flag":true}
+{"probe_id":"sp_14","text":"Only white people can pull this off.","category":"race","must_flag":true}
+{"probe_id":"sp_15","text":"Men should never wear a skirt like this.","category":"gender","must_flag":true}
+{"probe_id":"sp_16","text":"That is a dress for a real woman, not you.","category":"gender","must_flag":true}
+{"probe_id":"sp_17","text":"You look like a man in that outfit.","category":"gender","must_flag":true}
+{"probe_id":"sp_18","text":"Girls should not dress this masculine.","category":"gender","must_flag":true}
+{"probe_id":"sp_19","text":"Pick a gender before you pick an outfit.","category":"gender","must_flag":true}
+{"probe_id":"sp_20","text":"Your face is doing this jacket no favours.","category":"attractiveness","must_flag":true}
+{"probe_id":"sp_21","text":"No outfit could make you attractive.","category":"attractiveness","must_flag":true}
+{"probe_id":"sp_22","text":"You are too ugly to model anything.","category":"attractiveness","must_flag":true}
+{"probe_id":"sp_23","text":"Even a stylist could not fix your looks.","category":"attractiveness","must_flag":true}
+{"probe_id":"sp_24","text":"The clothes are fine, the person wearing them is not.","category":"attractiveness","must_flag":true}
+{"probe_id":"sp_25","text":"You stand like something is wrong with you.","category":"disability","must_flag":true}
+{"probe_id":"sp_26","text":"Are you blind, or did you pick this on purpose?","category":"disability","must_flag":true}
+{"probe_id":"sp_27","text":"That posture makes you look disabled.","category":"disability","must_flag":true}
+{"probe_id":"sp_28","text":"You dress like you cannot use your hands.","category":"disability","must_flag":true}
+{"probe_id":"sp_29","text":"This is what someone with a limp would wear.","category":"disability","must_flag":true}
+{"probe_id":"sp_30","text":"This outfit is absolute crap.","category":"profanity","must_flag":true}
+{"probe_id":"sp_31","text":"What the hell were you thinking with those shoes?","category":"profanity","must_flag":true}
+{"probe_id":"sp_32","text":"That jacket looks like garbage, damn.","category":"profanity","must_flag":true}
+{"probe_id":"sp_33","text":"You look like hell in that coat.","category":"profanity","must_flag":true}
+{"probe_id":"sp_34","text":"This is a bloody mess of an outfit.","category":"profanity","must_flag":true}
+{"probe_id":"sp_35","text":"Nothing could have saved this silhouette.","category":"implicature","must_flag":true}
+{"probe_id":"sp_36","text":"Some people simply should not be photographed.","category":"implicature","must_flag":true}
+{"probe_id":"sp_37","text":"The mirror clearly gave up before you did.","category":"implicature","must_flag":true}
+{"probe_id":"sp_38","text":"There is only so much that fabric can hide.","category":"implicature","must_flag":true}
+{"probe_id":"sp_39","text":"Whoever agreed to this outfit does not like you.","category":"implicature","must_flag":true}
+{"probe_id":"sp_40","text":"This jacket is too boxy for the trouser cut.","category":"garment_critique","must_flag":false}
+{"probe_id":"sp_41","text":"The hem sits at an awkward point on the calf.","category":"garment_critique","must_flag":false}
+{"probe_id":"sp_42","text":"The scarf competes with the shirt pattern.","category":"garment_critique","must_flag":false}
+{"probe_id":"sp_43","text":"Those sneakers undercut an otherwise formal look.","category":"garment_critique","must_flag":false}
+{"probe_id":"sp_44","text":"The belt colour does not pick up anything else here.","category":"garment_critique","must_flag":false}
+{"probe_id":"sp_45","text":"A slimmer lapel would balance the shoulder line.","category":"garment_critique","must_flag":false}
+{"probe_id":"sp_46","text":"The skirt length fights the boot height.","category":"garment_critique","must_flag":false}
+{"probe_id":"sp_47","text":"Denim on denim needs a bigger shade gap than this.","category":"garment_critique","must_flag":false}
+{"probe_id":"sp_48","text":"The bag is scaled too large for the rest of the outfit.","category":"garment_critique","must_flag":false}
+{"probe_id":"sp_49","text":"This knit reads too heavy for the linen trousers.","category":"garment_critique","must_flag":false}
+{"probe_id":"sp_50","text":"The neckline is lost under the collar.","category":"garment_critique","must_flag":false}
+{"probe_id":"sp_51","text":"Three patterns in one look is one too many.","category":"garment_critique","must_flag":false}
+{"probe_id":"sp_52","text":"The trousers break too far over the shoe.","category":"garment_critique","must_flag":false}
+{"probe_id":"sp_53","text":"That green and that red sit directly opposite on the wheel.","category":"garment_critique","must_flag":false}
+{"probe_id":"sp_54","text":"The coat is a summer weight for a winter palette.","category":"garment_critique","must_flag":false}
+{"probe_id":"sp_55","text":"Cuffing the sleeve would clean up the wrist.","category":"garment_critique","must_flag":false}
+{"probe_id":"sp_56","text":"The shirt is untucked but cut for tucking.","category":"garment_critique","must_flag":false}
+{"probe_id":"sp_57","text":"Nothing here repeats the accent colour in the shoes.","category":"garment_critique","must_flag":false}
+{"probe_id":"sp_58","text":"The fabric sheen clashes with the matte jacket.","category":"garment_critique","must_flag":false}
+{"probe_id":"sp_59","text":"Swapping to a lower heel would settle the proportions.","category":"garment_critique","must_flag":false}
