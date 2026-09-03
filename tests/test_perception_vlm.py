@@ -30,7 +30,7 @@ from rmo.schemas import ColorName, Garment, GarmentSlot, OutfitDescription
 def write_mask(root: Path, image_id: str, array: np.ndarray) -> None:
     directory = root / "raw" / "parsing"
     directory.mkdir(parents=True, exist_ok=True)
-    Image.fromarray(array).save(directory / f"{image_id}.png")
+    Image.fromarray(array).save(directory / f"{image_id}_segm.png")
 
 
 @pytest.fixture()
