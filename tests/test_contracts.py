@@ -16,6 +16,7 @@ from rmo import pipeline
 from rmo.paths import repo_root
 from rmo.perception.dummy import DummyPerception
 from rmo.roast.dummy import DummyRoaster
+from rmo.roast.gemini import GeminiRoaster
 from rmo.roast.rules import RuleBasedRoaster
 from rmo.schemas import OutfitDescription, OutfitScore, Provenance, RoastOutput
 from rmo.scoring.dummy import DummyScorer
@@ -25,6 +26,7 @@ REGISTERED_NAMES = [
     DummyScorer.name,
     DummyRoaster.name,
     RuleBasedRoaster.name,
+    GeminiRoaster.name,
 ]
 
 DEFAULT_NAMES = [

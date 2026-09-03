@@ -1,0 +1,394 @@
+diff --git a/.env.example b/.env.example
+new file mode 100644
+index 0000000..6c6855f
+--- /dev/null
++++ b/.env.example
+@@ -0,0 +1,5 @@
++# Copy this file to .env and replace the placeholder with your Google AI Studio key.
++GEMINI_API_KEY=your_gemini_api_key_here
++
++# Optional: override the default Gemini model.
++RMO_GEMINI_MODEL=gemini-3.6-flash
+diff --git a/.gitignore b/.gitignore
+index 02a559e..46a1c02 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -70,6 +70,8 @@ rabbitmq-data/
+ activemq-data/
+ *.sage.py
+ .env
++.env.*
++!.env.example
+ .envrc
+ .venv
+ env/
+diff --git a/README.md b/README.md
+index e4e371c..513b8e3 100644
+--- a/README.md
++++ b/README.md
+@@ -33,6 +33,21 @@ python -m rmo.pipeline --image data/fixtures/images/fixture_000.png
+ One `RoastOutput` is written to stdout as JSON. Any stage left unregistered falls back to its
+ fixture-replay model. Add `--json` to get the description and the score alongside the roast.
+ 
++## Gemini roast integration
++
++The rule-based roaster can also be replaced with a hosted Gemini roast generator. Copy the
++committed environment template, add your Google AI Studio key, then select `gemini_roaster`:
++
++```powershell
++Copy-Item .env.example .env
++# Edit .env and set GEMINI_API_KEY. Never commit .env.
++python -m rmo.pipeline --image data/fixtures/images/fixture_002.png --roaster gemini_roaster --json
++```
++
++`GeminiRoaster` uses `gemini-3.6-flash` by default. Set `RMO_GEMINI_MODEL` in `.env` to override
++the model. If the API fails, returns invalid structured output, or fails the local safety checks,
++the pipeline falls back to `RuleBasedRoaster`.
++
+ ## Dataset
+ 
+ DeepFashion-MultiModal sits behind a Google Drive consent screen, so the download is manual and
+diff --git a/pyproject.toml b/pyproject.toml
+index 1e6a232..95ff751 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -19,6 +19,8 @@ dependencies = [
+     "pyyaml>=6.0",
+     "requests>=2.31",
+     "scikit-learn>=1.4",
++    "google-genai>=2.22.0",
++    "python-dotenv>=1.0",
+ ]
+ 
+ [project.optional-dependencies]
+diff --git a/requirements.txt b/requirements.txt
+index dee687c..8ff2e5c 100644
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -15,3 +15,5 @@ ipywidgets>=8.1
+ nbdime>=4.0
+ tqdm>=4.66
+ pytest>=8.0
++google-genai>=2.22.0
++python-dotenv>=1.0
+diff --git a/src/rmo/roast/__init__.py b/src/rmo/roast/__init__.py
+index 19456bb..8b24f28 100644
+--- a/src/rmo/roast/__init__.py
++++ b/src/rmo/roast/__init__.py
+@@ -2,7 +2,9 @@
+ 
+ from rmo.pipeline import register
+ from rmo.roast.dummy import DummyRoaster
++from rmo.roast.gemini import GeminiRoaster
+ from rmo.roast.rules import RuleBasedRoaster
+ 
+ register(DummyRoaster.name, DummyRoaster)
+-register(RuleBasedRoaster.name, RuleBasedRoaster)
+\ No newline at end of file
++register(RuleBasedRoaster.name, RuleBasedRoaster)
++register(GeminiRoaster.name, GeminiRoaster)
+diff --git a/src/rmo/roast/gemini.py b/src/rmo/roast/gemini.py
+new file mode 100644
+index 0000000..160a803
+--- /dev/null
++++ b/src/rmo/roast/gemini.py
+@@ -0,0 +1,170 @@
++"""Gemini-backed roast generator with deterministic fallback and local safety checks."""
++
++from __future__ import annotations
++
++import logging
++import os
++from typing import Annotated, Any
++
++from pydantic import BaseModel, Field
++
++from rmo.paths import repo_root
++from rmo.roast.base import RoastGenerator
++from rmo.roast.rules import RuleBasedRoaster
++from rmo.roast.safety import flag_text
++from rmo.schemas import OutfitDescription, OutfitScore, RoastOutput
++
++__all__ = ["GeminiRoaster"]
++
++log = logging.getLogger(__name__)
++
++
++class _GeminiRoastResponse(BaseModel):
++    """Only the copy fields that Gemini is allowed to generate."""
++
++    roast: str = Field(min_length=1, max_length=1000)
++    suggestions: list[Annotated[str, Field(min_length=1, max_length=280)]] = Field(
++        min_length=1, max_length=5
++    )
++
++
++class GeminiRoaster(RoastGenerator):
++    """Generate roast copy with Gemini and fall back safely on deterministic rules."""
++
++    name = "gemini_roaster"
++
++    def __init__(
++        self,
++        *,
++        client: Any | None = None,
++        model: str | None = None,
++    ) -> None:
++        self._fallback = RuleBasedRoaster()
++
++        if client is None:
++            self._load_dotenv()
++
++        self.model = model or os.environ.get("RMO_GEMINI_MODEL", "gemini-3.6-flash")
++
++        if client is not None:
++            self._client = client
++            return
++
++        api_key = os.environ.get("GEMINI_API_KEY")
++        if not api_key:
++            raise RuntimeError(
++                "GEMINI_API_KEY is not set. Put it in <project-root>/.env as "
++                "GEMINI_API_KEY=your_key, or define it as an environment variable."
++            )
++
++        try:
++            from google import genai
++        except ImportError as exc:  # pragma: no cover - installation dependent
++            raise RuntimeError(
++                "Gemini support requires google-genai. Install project dependencies first."
++            ) from exc
++
++        self._client = genai.Client(api_key=api_key)
++
++    @staticmethod
++    def _load_dotenv() -> None:
++        """Load <repo-root>/.env without overriding real environment variables."""
++        try:
++            from dotenv import load_dotenv
++        except ImportError as exc:  # pragma: no cover - installation dependent
++            raise RuntimeError(
++                "Loading .env files requires python-dotenv. Install project dependencies first."
++            ) from exc
++
++        load_dotenv(dotenv_path=repo_root() / ".env", override=False)
++
++    def generate(self, description: OutfitDescription, score: OutfitScore) -> RoastOutput:
++        """Generate a Gemini roast, or return the deterministic fallback on failure."""
++        fallback = self._fallback.generate(description, score)
++
++        # Do not spend an API request when upstream data is explicitly unscorable.
++        if not fallback.grounded_garments and score.overall == 0.0:
++            return fallback
++
++        prompt = self._build_prompt(description, score, fallback)
++
++        try:
++            interaction = self._client.interactions.create(
++                model=self.model,
++                input=prompt,
++                response_format={
++                    "type": "text",
++                    "mime_type": "application/json",
++                    "schema": _GeminiRoastResponse.model_json_schema(),
++                },
++            )
++            generated = _GeminiRoastResponse.model_validate_json(interaction.output_text)
++        except Exception as exc:
++            log.warning(
++                "Gemini roast generation failed (%s); using rule-based fallback.",
++                type(exc).__name__,
++            )
++            return fallback
++
++        safety_flags = flag_text(" ".join([generated.roast, *generated.suggestions]))
++        if safety_flags:
++            log.warning(
++                "Gemini roast failed local safety checks (%s); using rule-based fallback.",
++                ", ".join(safety_flags),
++            )
++            return fallback
++
++        return RoastOutput(
++            image_id=description.image_id,
++            roast=generated.roast,
++            suggestions=generated.suggestions,
++            tone=fallback.tone,
++            grounded_garments=fallback.grounded_garments,
++            safety_flags=[],
++            provenance=description.provenance,
++            source_model=self.name,
++        )
++
++    def _build_prompt(
++        self,
++        description: OutfitDescription,
++        score: OutfitScore,
++        fallback: RoastOutput,
++    ) -> str:
++        garments = "\n".join(
++            f"- {garment.ref}: {garment.color.value} {garment.category}, "
++            f"pattern={garment.pattern.value}, fabric={garment.fabric.value}"
++            for garment in description.garments
++        )
++        issues = "\n".join(
++            f"- {issue.severity.value} / {issue.code.value}: {issue.message} "
++            f"(garments: {', '.join(issue.garment_refs) or 'none'})"
++            for issue in score.worst_issues(limit=3)
++        ) or "- No issues were reported."
++
++        return f"""You are the text-generation stage of a product called Roast My Outfit.
++
++Roast the CLOTHES and styling only, never the person wearing them.
++
++Rules:
++- Do not comment on body shape, weight, age, race, ethnicity, skin tone, gender, attractiveness,
++  disability, health, posture, or any other personal characteristic.
++- Do not use profanity, slurs, threats, sexual content, or humiliation aimed at the wearer.
++- Ground every joke in the garment/style facts and scoring issues below.
++- Do not invent garments, colours, fabrics, patterns, or problems that are not provided.
++- Requested tone: {fallback.tone.value}.
++- Make the roast concise, witty, and natural.
++- Return 1 to 5 practical styling suggestions.
++- If there are no issues, make the roast a playful compliment and keep suggestions positive.
++
++Outfit caption:
++{description.caption or '(no caption)'}
++
++Garments:
++{garments}
++
++Overall score: {score.overall:.1f}/100
++
++Top scoring issues:
++{issues}
++"""
+diff --git a/tests/test_contracts.py b/tests/test_contracts.py
+index ae9ab26..18bbcfe 100644
+--- a/tests/test_contracts.py
++++ b/tests/test_contracts.py
+@@ -16,6 +16,7 @@ from rmo import pipeline
+ from rmo.paths import repo_root
+ from rmo.perception.dummy import DummyPerception
+ from rmo.roast.dummy import DummyRoaster
++from rmo.roast.gemini import GeminiRoaster
+ from rmo.roast.rules import RuleBasedRoaster
+ from rmo.schemas import OutfitDescription, OutfitScore, Provenance, RoastOutput
+ from rmo.scoring.dummy import DummyScorer
+@@ -25,6 +26,7 @@ REGISTERED_NAMES = [
+     DummyScorer.name,
+     DummyRoaster.name,
+     RuleBasedRoaster.name,
++    GeminiRoaster.name,
+ ]
+ 
+ DEFAULT_NAMES = [
+diff --git a/tests/test_roast_gemini.py b/tests/test_roast_gemini.py
+new file mode 100644
+index 0000000..4387b41
+--- /dev/null
++++ b/tests/test_roast_gemini.py
+@@ -0,0 +1,103 @@
++"""Cover Gemini roast generation without making network calls."""
++
++from __future__ import annotations
++
++from types import SimpleNamespace
++
++from rmo.roast.gemini import GeminiRoaster
++from rmo.schemas import OutfitDescription, OutfitScore
++
++
++class FakeInteractions:
++    def __init__(self, *, output_text: str | None = None, error: Exception | None = None) -> None:
++        self.output_text = output_text
++        self.error = error
++        self.calls: list[dict[str, object]] = []
++
++    def create(self, **kwargs):
++        self.calls.append(kwargs)
++        if self.error is not None:
++            raise self.error
++        return SimpleNamespace(output_text=self.output_text)
++
++
++class FakeClient:
++    def __init__(self, interactions: FakeInteractions) -> None:
++        self.interactions = interactions
++
++
++def test_gemini_roaster_returns_generated_copy(
++    descriptions: dict[str, OutfitDescription],
++    scores: dict[str, OutfitScore],
++) -> None:
++    interactions = FakeInteractions(
++        output_text=(
++            '{"roast":"Your palette has more plot twists than the outfit can support.",'
++            '"suggestions":["Keep one accent colour and neutralise the rest."]}'
++        )
++    )
++    roaster = GeminiRoaster(client=FakeClient(interactions), model="gemini-3.6-flash")
++
++    image_id = "fixture_002"
++    roast = roaster.generate(descriptions[image_id], scores[image_id])
++
++    assert roast.source_model == GeminiRoaster.name
++    assert roast.image_id == image_id
++    assert roast.provenance == descriptions[image_id].provenance
++    assert roast.safety_flags == []
++    assert set(roast.grounded_garments) <= set(descriptions[image_id].refs())
++    assert interactions.calls[0]["model"] == "gemini-3.6-flash"
++    response_format = interactions.calls[0]["response_format"]
++    assert response_format["mime_type"] == "application/json"
++
++
++def test_gemini_roaster_falls_back_on_api_error(
++    descriptions: dict[str, OutfitDescription],
++    scores: dict[str, OutfitScore],
++) -> None:
++    interactions = FakeInteractions(error=RuntimeError("network down"))
++    roaster = GeminiRoaster(client=FakeClient(interactions))
++
++    roast = roaster.generate(descriptions["fixture_002"], scores["fixture_002"])
++    assert roast.source_model == "rule_roaster"
++
++
++def test_gemini_roaster_falls_back_on_invalid_structured_output(
++    descriptions: dict[str, OutfitDescription],
++    scores: dict[str, OutfitScore],
++) -> None:
++    interactions = FakeInteractions(output_text='{"roast":"Missing suggestions"}')
++    roaster = GeminiRoaster(client=FakeClient(interactions))
++
++    roast = roaster.generate(descriptions["fixture_002"], scores["fixture_002"])
++    assert roast.source_model == "rule_roaster"
++
++
++def test_gemini_roaster_falls_back_on_unsafe_copy(
++    descriptions: dict[str, OutfitDescription],
++    scores: dict[str, OutfitScore],
++) -> None:
++    interactions = FakeInteractions(
++        output_text=(
++            '{"roast":"You would look better if you lost some weight.",'
++            '"suggestions":["Keep the blouse."]}'
++        )
++    )
++    roaster = GeminiRoaster(client=FakeClient(interactions))
++
++    roast = roaster.generate(descriptions["fixture_002"], scores["fixture_002"])
++    assert roast.source_model == "rule_roaster"
++
++
++def test_unscorable_record_does_not_call_gemini(
++    descriptions: dict[str, OutfitDescription],
++    scores: dict[str, OutfitScore],
++) -> None:
++    interactions = FakeInteractions(
++        output_text='{"roast":"unused","suggestions":["unused"]}'
++    )
++    roaster = GeminiRoaster(client=FakeClient(interactions))
++
++    roast = roaster.generate(descriptions["fx_deg_05"], scores["fx_deg_05"])
++    assert roast.source_model == "rule_roaster"
++    assert interactions.calls == []

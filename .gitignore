@@ -70,6 +70,8 @@ rabbitmq-data/
 activemq-data/
 *.sage.py
 .env
+.env.*
+!.env.example
 .envrc
 .venv
 env/

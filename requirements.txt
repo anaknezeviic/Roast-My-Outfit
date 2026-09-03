@@ -15,3 +15,5 @@ ipywidgets>=8.1
 nbdime>=4.0
 tqdm>=4.66
 pytest>=8.0
+google-genai>=2.22.0
+python-dotenv>=1.0
