@@ -1,9 +1,4 @@
-"""Decode the three integer-coded label files into tidy per-image tables.
-
-Filenames differ between mirrors, so files are identified by row width and name
-rather than by a fixed filename. ``na`` is a real category meaning "not visible",
-never a null.
-"""
+"""Decode integer-coded labels with ``na`` as an explicit category."""
 
 from __future__ import annotations
 
@@ -203,19 +198,24 @@ def find_label_files(label_dir: Path) -> dict[str, Path]:
 
 
 def parse_label_dir(label_dir: Path) -> dict[str, pd.DataFrame]:
-    """Parse all three label files and confirm they describe the same images."""
+    """Parse all labels and validate their image populations."""
     files = find_label_files(label_dir)
     tables = {kind: _PARSERS[kind](files[kind]) for kind in _KINDS}
 
-    reference = set(tables["shape"]["image_id"])
-    for kind in ("fabric", "pattern"):
-        other = set(tables[kind]["image_id"])
-        if other != reference:
-            raise AnnotationError(
-                f"{files[kind].name} covers {len(other)} images against "
-                f"{len(reference)} in {files['shape'].name}: "
-                f"{len(reference - other)} missing, {len(other - reference)} unexpected."
-            )
+    fabric_ids = set(tables["fabric"]["image_id"])
+    pattern_ids = set(tables["pattern"]["image_id"])
+    if fabric_ids != pattern_ids:
+        raise AnnotationError(
+            f"{files['fabric'].name} is missing {len(pattern_ids - fabric_ids)} pattern images; "
+            f"{files['pattern'].name} is missing {len(fabric_ids - pattern_ids)} fabric images."
+        )
 
-    log.info("parsed %d images from %s", len(reference), label_dir)
+    shape_ids = set(tables["shape"]["image_id"])
+    missing_textures = shape_ids - fabric_ids
+    if missing_textures:
+        raise AnnotationError(
+            f"Texture annotations are missing {len(missing_textures)} shape images."
+        )
+
+    log.info("parsed %d labeled images from %s", len(fabric_ids), label_dir)
     return tables
