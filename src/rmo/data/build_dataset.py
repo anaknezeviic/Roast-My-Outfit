@@ -12,7 +12,7 @@ from uuid import uuid4
 import pandas as pd
 
 from rmo import paths
-from rmo.data.parse_annotations import parse_label_dir
+from rmo.data.parse_annotations import SHAPE_COLUMNS, parse_label_dir
 
 log = logging.getLogger(__name__)
 
@@ -98,8 +98,11 @@ def build_outfit_table(
 ) -> pd.DataFrame:
     """Join staged metadata into one deterministic row per labeled image."""
     tables = parse_label_dir(label_dir)
-    frame = tables["shape"].merge(tables["fabric"], on="image_id", validate="one_to_one")
-    frame = frame.merge(tables["pattern"], on="image_id", validate="one_to_one")
+    shape_ids = set(tables["shape"]["image_id"])
+    frame = tables["fabric"].merge(tables["pattern"], on="image_id", validate="one_to_one")
+    frame = frame.merge(tables["shape"], on="image_id", how="left", validate="one_to_one")
+    for column in SHAPE_COLUMNS:
+        frame[column] = frame[column].fillna("na")
 
     identities = _identity_columns(frame["image_id"])
     valid_identity = identities.notna().all(axis="columns")
@@ -113,13 +116,20 @@ def build_outfit_table(
 
     captions = load_captions(caption_file)
     frame = frame.merge(captions, on="image_id", how="left", validate="one_to_one")
-    missing = frame.loc[frame["caption"].isna(), "image_id"].tolist()
-    if missing:
-        preview = ", ".join(repr(image_id) for image_id in missing[:3])
-        raise DatasetError(f"Missing captions for {len(missing)} images: {preview}.")
+    missing = set(frame.loc[frame["caption"].isna(), "image_id"])
+    missing_shape_captions = sorted(missing & shape_ids)
+    if missing_shape_captions:
+        preview = ", ".join(repr(image_id) for image_id in missing_shape_captions[:3])
+        raise DatasetError(
+            f"Missing captions for {len(missing_shape_captions)} images: {preview}."
+        )
+    frame["caption"] = frame["caption"].fillna("")
 
     parsing_ids = (
-        {candidate.stem for candidate in parsing_dir.glob("*.png")}
+        {
+            candidate.stem.removesuffix("_segm")
+            for candidate in parsing_dir.glob("*.png")
+        }
         if parsing_dir.is_dir()
         else set()
     )

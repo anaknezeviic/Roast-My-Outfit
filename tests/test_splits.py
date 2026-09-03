@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+import hashlib
 import itertools
+import json
+import re
 
 import pandas as pd
 import pytest
 
 from rmo import paths
-from rmo.splits import SPLIT_NAMES, group_key_for, load_split, write_splits
+from rmo.splits import SPLIT_NAMES, SPLIT_SEED, group_key_for, load_split, write_splits
 
 
 @pytest.mark.parametrize(
@@ -64,6 +67,31 @@ def test_load_split_reads_stems_and_drops_blank_lines(tmp_path, monkeypatch) -> 
 
 def test_split_names_are_the_three_the_loader_accepts() -> None:
     assert SPLIT_NAMES == ("train", "val", "test")
+
+
+def test_committed_split_manifest_matches_files() -> None:
+    split_dir = paths.splits_dir()
+    manifest = json.loads((split_dir / "MANIFEST.json").read_text(encoding="utf-8"))
+    split_ids = {name: load_split(name) for name in SPLIT_NAMES}
+
+    assert manifest["counts"] == {
+        name: len(split_ids[name]) for name in SPLIT_NAMES
+    }
+    assert manifest["n_groups"] == len(
+        {
+            group_key_for(image_id)
+            for image_ids in split_ids.values()
+            for image_id in image_ids
+        }
+    )
+    assert manifest["split_seed"] == SPLIT_SEED
+    assert re.fullmatch(r"[0-9a-f]{40}", manifest["git_sha"])
+    assert manifest["sha256"] == {
+        f"{name}.txt": hashlib.sha256(
+            (split_dir / f"{name}.txt").read_bytes()
+        ).hexdigest()
+        for name in SPLIT_NAMES
+    }
 
 
 def test_write_splits_rejects_missing_stratification_values(tmp_path) -> None:
@@ -122,3 +150,13 @@ def test_written_splits_are_deterministic_grouped_and_lf_terminated(tmp_path) ->
         assert content == (tmp_path / f"{name}.txt").read_bytes()
         assert content.endswith(b"\n")
         assert b"\r\n" not in content
+
+    manifest = json.loads((tmp_path / "MANIFEST.json").read_text(encoding="utf-8"))
+    assert manifest["counts"] == {name: len(first[name]) for name in SPLIT_NAMES}
+    assert manifest["n_groups"] == len(set().union(*groups.values()))
+    assert manifest["split_seed"] == 20260101
+    assert len(manifest["git_sha"]) == 40
+    assert manifest["sha256"] == {
+        f"{name}.txt": hashlib.sha256(first_contents[name]).hexdigest()
+        for name in SPLIT_NAMES
+    }

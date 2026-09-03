@@ -172,6 +172,21 @@ def test_parse_label_dir_returns_all_three(labels):
     assert all(len(frame) == 2 for frame in tables.values())
 
 
+def test_parse_label_dir_retains_texture_only_images(labels):
+    for name in ("fabric_ann.txt", "texture_ann.txt"):
+        path = labels / name
+        path.write_text(
+            path.read_text(encoding="utf-8") + "img_7.jpg 1 2 3\n",
+            encoding="utf-8",
+        )
+
+    tables = annotations.parse_label_dir(labels)
+
+    assert list(tables["shape"]["image_id"]) == ["img_0", "img_1"]
+    assert list(tables["fabric"]["image_id"]) == ["img_0", "img_1", "img_7"]
+    assert list(tables["pattern"]["image_id"]) == ["img_0", "img_1", "img_7"]
+
+
 def test_parse_label_dir_rejects_misaligned_files(labels):
     write(labels / "fabric_ann.txt", "img_0.jpg 0 1 2\nimg_7.jpg 1 2 3\n")
     with pytest.raises(annotations.AnnotationError, match="missing"):

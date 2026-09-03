@@ -6,9 +6,12 @@ product lands on the same side of the split.
 
 from __future__ import annotations
 
+import hashlib
 import itertools
+import json
 import logging
 import re
+import subprocess
 from pathlib import Path
 from uuid import uuid4
 
@@ -76,6 +79,49 @@ def _write_ids(path: Path, image_ids: set[str]) -> None:
         temporary.unlink(missing_ok=True)
 
 
+def _git_sha() -> str:
+    """Return the current repository commit SHA."""
+    result = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=paths.repo_root(),
+        capture_output=True,
+        check=True,
+        text=True,
+    )
+    return result.stdout.strip()
+
+
+def _write_manifest(
+    destination: Path,
+    splits: dict[str, set[str]],
+    split_groups: dict[str, set[str]],
+) -> None:
+    """Write split metadata and content hashes atomically."""
+    manifest = {
+        "counts": {name: len(splits[name]) for name in SPLIT_NAMES},
+        "n_groups": len(set().union(*split_groups.values())),
+        "split_seed": SPLIT_SEED,
+        "git_sha": _git_sha(),
+        "sha256": {
+            f"{name}.txt": hashlib.sha256(
+                (destination / f"{name}.txt").read_bytes()
+            ).hexdigest()
+            for name in SPLIT_NAMES
+        },
+    }
+    path = destination / "MANIFEST.json"
+    temporary = path.with_name(f".{path.name}.{uuid4().hex}.tmp")
+    try:
+        temporary.write_text(
+            json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        temporary.replace(path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
 def write_splits(
     frame: pd.DataFrame,
     split_dir: Path | None = None,
@@ -138,6 +184,7 @@ def write_splits(
     destination = paths.ensure_dir(split_dir or paths.splits_dir())
     for name, image_ids in splits.items():
         _write_ids(destination / f"{name}.txt", image_ids)
+    _write_manifest(destination, splits, split_groups)
     log.info(
         "wrote %d train, %d val and %d test image IDs to %s",
         len(splits["train"]),
