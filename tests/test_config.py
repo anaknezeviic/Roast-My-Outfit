@@ -91,6 +91,13 @@ def test_shipped_prompt_asks_about_clothing(shipped) -> None:
     assert "wearing" in prompt or "outfit" in prompt
 
 
+def test_shipped_prompt_requires_a_pattern_for_every_item(shipped) -> None:
+    prompt = shipped["prompt"].lower()
+    assert "every item" in prompt
+    assert "pattern" in prompt
+    assert "plain" in prompt
+
+
 @pytest.mark.parametrize("name", sorted(VOCABULARIES))
 def test_shipped_prompt_does_not_enumerate_a_vocabulary(shipped, name: str) -> None:
     known = spelled(VOCABULARIES[name])

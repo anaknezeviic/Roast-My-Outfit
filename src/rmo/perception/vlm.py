@@ -1,7 +1,4 @@
-"""Zero-shot outfit perception with a local SmolVLM checkpoint.
-
-``torch`` and ``transformers`` are imported on first use, not at import time.
-"""
+"""Run local zero-shot SmolVLM perception with lazy model imports."""
 
 from __future__ import annotations
 
@@ -68,8 +65,16 @@ def _measure(garment: Garment, entry: PaletteEntry, area_fraction: float | None)
 
 def _load_mask(image_id: str, size: tuple[int, int], keep: frozenset[int]) -> np.ndarray | None:
     """Return the parsing label map for ``image_id``, or ``None`` when it is unusable."""
-    path = paths.parsing_dir() / f"{image_id}.png"
-    if not path.is_file():
+    directory = paths.parsing_dir()
+    path = next(
+        (
+            candidate
+            for candidate in (directory / f"{image_id}_segm.png", directory / f"{image_id}.png")
+            if candidate.is_file()
+        ),
+        None,
+    )
+    if path is None:
         return None
 
     with Image.open(path) as handle:
