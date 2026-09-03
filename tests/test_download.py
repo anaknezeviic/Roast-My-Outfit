@@ -52,6 +52,21 @@ def test_all_groups_are_staged(source):
     assert len(list((raw / "images").glob("*.jpg"))) == 6
 
 
+def test_official_nested_label_layout_is_staged(env):
+    source = env / "official"
+    write(source / "labels" / "shape" / "shape_anno_all.txt")
+    write(source / "labels" / "texture" / "fabric_ann.txt")
+    write(source / "labels" / "texture" / "pattern_ann.txt")
+    write(source / "captions.json", "{}")
+
+    assert download.main(["--from", str(source)]) == 0
+    assert {path.name for path in (paths.raw_dir() / "labels").glob("*.txt")} == {
+        "shape_anno_all.txt",
+        "fabric_ann.txt",
+        "pattern_ann.txt",
+    }
+
+
 def test_densepose_and_keypoints_are_never_staged(source):
     download.main(["--all", "--from", str(source)])
     raw = paths.raw_dir()
@@ -72,6 +87,24 @@ def test_restaging_skips_files_already_present(source):
     assert download.stage_group(source, images) == (0, 6)
 
 
+def test_interrupted_copy_leaves_no_destination_or_temporary_file(
+    tmp_path, monkeypatch
+):
+    source = write(tmp_path / "source.txt", "complete")
+    destination = tmp_path / "raw" / "destination.txt"
+
+    def fail_copy(src, dst):
+        Path(dst).write_text("partial", encoding="utf-8")
+        raise OSError("copy interrupted")
+
+    monkeypatch.setattr(download.shutil, "copy2", fail_copy)
+    with pytest.raises(OSError, match="copy interrupted"):
+        download.copy_asset(source, destination)
+
+    assert not destination.exists()
+    assert not list(destination.parent.glob("*.tmp"))
+
+
 def test_dry_run_copies_nothing(source):
     assert download.main(["--all", "--from", str(source), "--dry-run"]) == 0
     assert not (paths.raw_dir() / "images").exists()
@@ -86,6 +119,18 @@ def test_empty_source_is_reported_as_incomplete(env):
     empty = env / "empty"
     empty.mkdir()
     assert download.main(["--labels-only", "--from", str(empty)]) == download.EXIT_INCOMPLETE
+
+
+def test_labels_only_rejects_an_incomplete_annotation_set(env, caplog):
+    source = env / "partial"
+    write(source / "labels" / "fabric_ann.txt", "img.jpg 0 0 0\n")
+    write(source / "captions.json", "{}")
+
+    with caplog.at_level("ERROR", logger="rmo.data.download"):
+        result = download.main(["--labels-only", "--from", str(source)])
+
+    assert result == download.EXIT_INCOMPLETE
+    assert "missing annotations: shape, pattern" in caplog.text
 
 
 def test_labels_only_rejects_other_groups(source):
