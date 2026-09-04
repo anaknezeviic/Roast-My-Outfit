@@ -80,6 +80,31 @@ def test_split_names_are_the_three_the_loader_accepts() -> None:
     assert SPLIT_NAMES == ("train", "val", "test")
 
 
+def test_committed_split_manifest_matches_files() -> None:
+    split_dir = paths.splits_dir()
+    manifest = json.loads((split_dir / "MANIFEST.json").read_text(encoding="utf-8"))
+    split_ids = {name: load_split(name) for name in SPLIT_NAMES}
+
+    assert manifest["counts"] == {
+        name: len(split_ids[name]) for name in SPLIT_NAMES
+    }
+    assert manifest["n_groups"] == len(
+        {
+            group_key_for(image_id)
+            for image_ids in split_ids.values()
+            for image_id in image_ids
+        }
+    )
+    assert manifest["split_seed"] == SPLIT_SEED
+    assert re.fullmatch(r"[0-9a-f]{40}", manifest["git_sha"])
+    assert manifest["sha256"] == {
+        f"{name}.txt": hashlib.sha256(
+            (split_dir / f"{name}.txt").read_bytes()
+        ).hexdigest()
+        for name in SPLIT_NAMES
+    }
+
+
 def test_write_splits_rejects_missing_stratification_values(tmp_path) -> None:
     frame = pd.DataFrame(
         [

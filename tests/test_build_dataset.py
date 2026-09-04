@@ -70,6 +70,36 @@ def test_build_outfit_table_joins_and_derives_columns(tmp_path):
     assert not frame[["garment_id", "gender", "category_from_filename"]].isna().any().any()
 
 
+def test_texture_only_image_has_explicit_shape_values_and_blank_caption(tmp_path):
+    raw = staged_data(tmp_path)
+    image_id = "WOMEN-Dresses-id_00000003-01_1_front"
+    for name, codes in (("fabric_ann.txt", "1 7 7"), ("pattern_ann.txt", "3 7 7")):
+        path = raw / "labels" / name
+        path.write_text(
+            path.read_text(encoding="utf-8") + f"{image_id}.jpg {codes}\n",
+            encoding="utf-8",
+        )
+
+    frame = build_outfit_table(raw / "labels", raw / "captions.json", raw / "parsing")
+    row = frame.loc[frame["image_id"] == image_id].iloc[0]
+
+    assert all(row[column] == "na" for column in (
+        "sleeve_length",
+        "lower_length",
+        "socks",
+        "hat",
+        "glasses",
+        "neckwear",
+        "wrist",
+        "ring",
+        "waist_accessory",
+        "neckline",
+        "cardigan",
+        "navel_covered",
+    ))
+    assert row["caption"] == ""
+
+
 def test_malformed_product_filename_is_dropped_and_counted(tmp_path, caplog):
     raw = staged_data(tmp_path)
     additions = {

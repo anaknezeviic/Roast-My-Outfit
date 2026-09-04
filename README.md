@@ -33,6 +33,21 @@ python -m rmo.pipeline --image data/fixtures/images/fixture_000.png
 One `RoastOutput` is written to stdout as JSON. Any stage left unregistered falls back to its
 fixture-replay model. Add `--json` to get the description and the score alongside the roast.
 
+## Gemini roast integration
+
+The rule-based roaster can also be replaced with a hosted Gemini roast generator. Copy the
+committed environment template, add your Google AI Studio key, then select `gemini_roaster`:
+
+```powershell
+Copy-Item .env.example .env
+# Edit .env and set GEMINI_API_KEY. Never commit .env.
+python -m rmo.pipeline --image data/fixtures/images/fixture_002.png --roaster gemini_roaster --json
+```
+
+`GeminiRoaster` uses `gemini-3.6-flash` by default. Set `RMO_GEMINI_MODEL` in `.env` to override
+the model. If the API fails, returns invalid structured output, or fails the local safety checks,
+the pipeline falls back to `RuleBasedRoaster`.
+
 ## Dataset
 
 DeepFashion-MultiModal sits behind a Google Drive consent screen, so the download is manual and

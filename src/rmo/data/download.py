@@ -1,9 +1,4 @@
-"""Stage DeepFashion-MultiModal into ``data/raw`` and report what is there.
-
-Fetching is manual: the dataset sits behind a Google Drive consent screen. Point
-``--from`` or ``$RMO_SOURCE_DIR`` at the unpacked download. DensePose and
-``keypoints/`` are never staged.
-"""
+"""Stage local DeepFashion-MultiModal assets, excluding DensePose and keypoints."""
 
 from __future__ import annotations
 
@@ -16,6 +11,7 @@ import sys
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from uuid import uuid4
 
 from rmo import paths
 
@@ -29,6 +25,12 @@ EXIT_INCOMPLETE = 3
 SKIPPED_ASSETS = ("DensePose", "densepose", "keypoints")
 
 _SAMPLE_CHARS = 120
+
+_LABEL_TOKENS: dict[str, tuple[str, ...]] = {
+    "shape": ("shape",),
+    "fabric": ("fabric",),
+    "pattern": ("pattern", "color", "colour", "texture"),
+}
 
 
 @dataclass(frozen=True)
@@ -46,6 +48,7 @@ GROUPS: tuple[AssetGroup, ...] = (
         key="labels",
         patterns=(
             "labels/*.txt",
+            "labels/**/*.txt",
             "*_anno_*.txt",
             "*_ann.txt",
             "shape_anno*.txt",
@@ -147,8 +150,23 @@ def copy_asset(src: Path, dst: Path, *, dry_run: bool = False) -> bool:
         log.info("would copy %s -> %s", src.name, dst)
         return True
     paths.ensure_dir(dst.parent)
-    shutil.copy2(src, dst)
+    temporary = dst.with_name(f".{dst.name}.{uuid4().hex}.tmp")
+    try:
+        shutil.copy2(src, temporary)
+        temporary.replace(dst)
+    finally:
+        temporary.unlink(missing_ok=True)
     return True
+
+
+def _missing_annotations(root: Path) -> list[str]:
+    """Return annotation kinds absent from the staged label filenames."""
+    names = [path.name.lower() for path in (root / "labels").glob("*.txt")]
+    return [
+        kind
+        for kind, tokens in _LABEL_TOKENS.items()
+        if not any(any(token in name for token in tokens) for name in names)
+    ]
 
 
 def stage_group(
@@ -382,8 +400,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         log.info("%s", describe(record))
     log.info("staged %d entries under %s", len(records), root)
 
+    missing_annotations = _missing_annotations(root)
+    if missing_annotations:
+        log.error("missing annotations: %s", ", ".join(missing_annotations))
+        missing.append("labels")
+    if not any(record.json_entries is not None for record in records):
+        log.error("missing captions JSON")
+        missing.append("captions")
+
     if missing:
-        log.error("no files matched: %s", ", ".join(missing))
+        log.error("incomplete groups: %s", ", ".join(sorted(set(missing))))
         return EXIT_INCOMPLETE
 
     return 0

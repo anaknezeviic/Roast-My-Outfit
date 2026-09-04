@@ -1,9 +1,4 @@
-"""Decode the three integer-coded label files into tidy per-image tables.
-
-Filenames differ between mirrors, so files are identified by row width and name
-rather than by a fixed filename. ``na`` is a real category meaning "not visible",
-never a null.
-"""
+"""Decode integer-coded labels with ``na`` as an explicit category."""
 
 from __future__ import annotations
 

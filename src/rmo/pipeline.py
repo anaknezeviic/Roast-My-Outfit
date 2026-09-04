@@ -120,13 +120,20 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Emit the description and the score alongside the roast.",
     )
+    parser.add_argument(
+        "--roaster",
+        metavar="NAME",
+        default=None,
+        help="Registered roast-generator name to use. Defaults to the pipeline fallback.",
+    )
     return parser
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     """Run one photograph through every stage and write the result to stdout."""
     args = build_parser().parse_args(argv)
-    description, score, roast = OutfitRoaster().run(args.image)
+    roaster = create(args.roaster) if args.roaster is not None else None
+    description, score, roast = OutfitRoaster(roaster=roaster).run(args.image)
 
     if args.json:
         document = json.dumps(
