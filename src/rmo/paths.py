@@ -13,7 +13,9 @@ __all__ = [
     "repo_root",
     "data_root",
     "ensure_dir",
+    "configs_dir",
     "raw_dir",
+    "parsing_dir",
     "processed_dir",
     "splits_dir",
     "fixtures_dir",
@@ -57,9 +59,19 @@ def ensure_dir(path: Path) -> Path:
     return path
 
 
+def configs_dir() -> Path:
+    """Return ``<repo_root>/configs`` — prompts and lookup tables."""
+    return repo_root() / "configs"
+
+
 def raw_dir() -> Path:
     """Return ``<data_root>/raw`` — the dataset exactly as distributed."""
     return data_root() / "raw"
+
+
+def parsing_dir() -> Path:
+    """Return ``<raw_dir>/parsing`` — the per-image garment label maps."""
+    return raw_dir() / "parsing"
 
 
 def processed_dir() -> Path:
