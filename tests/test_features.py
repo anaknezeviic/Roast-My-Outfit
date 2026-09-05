@@ -28,12 +28,14 @@ from rmo.schemas import (
 )
 from rmo.scoring import features
 from rmo.scoring.features import (
+    ContractMismatch,
     FeatureSpec,
     build_spec,
     describe_to_features,
     feature_contract,
     feature_names,
     select_slots,
+    verify_contract,
 )
 from rmo.scoring.rules import largest_measured
 
@@ -646,3 +648,78 @@ def test_the_contract_digest_changes_when_the_specification_changes(
     mutate(config)
 
     assert feature_contract(build_spec(config))["spec_sha256"] != reference
+
+
+def test_a_contract_verifies_against_the_specification_that_produced_it() -> None:
+    spec = build_spec(base_config())
+
+    assert verify_contract(feature_contract(spec), spec) is None
+
+
+def test_a_round_tripped_contract_still_verifies() -> None:
+    spec = build_spec(base_config())
+    restored = json.loads(json.dumps(feature_contract(spec)))
+
+    assert verify_contract(restored, spec) is None
+
+
+@pytest.mark.parametrize(
+    "mutate", [bump_version, reverse_slots, rotate_blocks, widen_analogous_tolerance]
+)
+def test_a_contract_from_another_specification_is_refused(mutate: Any) -> None:
+    config = base_config()
+    mutate(config)
+    saved = feature_contract(build_spec(config))
+
+    with pytest.raises(ContractMismatch):
+        verify_contract(saved, build_spec(base_config()))
+
+
+def test_a_refusal_names_the_fields_that_disagree() -> None:
+    config = base_config()
+    bump_version(config)
+    saved = feature_contract(build_spec(config))
+
+    with pytest.raises(ContractMismatch, match="feature_version"):
+        verify_contract(saved, build_spec(base_config()))
+
+
+def test_a_different_feature_width_is_reported_as_a_width() -> None:
+    config = base_config()
+    config["features"]["slots"] = config["features"]["slots"][:2]
+    saved = feature_contract(build_spec(config))
+
+    with pytest.raises(ContractMismatch, match=r"describes \d+ features"):
+        verify_contract(saved, build_spec(base_config()))
+
+
+def test_a_contract_without_a_digest_is_refused() -> None:
+    spec = build_spec(base_config())
+    saved = feature_contract(spec)
+    del saved["spec_sha256"]
+
+    with pytest.raises(ContractMismatch, match="no spec_sha256"):
+        verify_contract(saved, spec)
+
+
+def test_a_tampered_digest_is_refused_even_when_every_field_matches() -> None:
+    spec = build_spec(base_config())
+    saved = feature_contract(spec)
+    saved["spec_sha256"] = "0" * 64
+
+    with pytest.raises(ContractMismatch, match="does not hash to its own"):
+        verify_contract(saved, spec)
+
+
+def test_a_tampered_body_is_refused_even_when_the_digest_is_left_alone() -> None:
+    spec = build_spec(base_config())
+    saved = feature_contract(spec)
+    saved["feature_version"] = "99.0.0"
+
+    with pytest.raises(ContractMismatch, match="does not hash to its own"):
+        verify_contract(saved, spec)
+
+
+def test_a_contract_that_is_not_a_mapping_is_refused() -> None:
+    with pytest.raises(ContractMismatch, match="must be a mapping"):
+        verify_contract([], build_spec(base_config()))

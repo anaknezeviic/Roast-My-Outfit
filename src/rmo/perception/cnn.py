@@ -141,7 +141,9 @@ def class_weights(targets: np.ndarray, supervised: np.ndarray) -> dict[str, list
             log.warning("head %s has no supervised rows, so every class weight is zero", head)
             weights[head] = [0.0] * size
             continue
-        weights[head] = [total / (present * count) if count else 0.0 for count in counts]
+        weights[head] = [
+            float(total / (present * count)) if count else 0.0 for count in counts
+        ]
     return weights
 
 

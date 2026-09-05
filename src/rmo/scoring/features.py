@@ -47,13 +47,18 @@ from rmo.scoring.rules import (
 )
 
 __all__ = [
+    "MAX_MISSINGNESS_AUC",
+    "ContractMismatch",
     "FeatureSpec",
     "build_spec",
     "describe_to_features",
     "feature_contract",
     "feature_names",
     "select_slots",
+    "verify_contract",
 ]
+
+MAX_MISSINGNESS_AUC = 0.6
 
 _SEPARATOR = "__"
 _SENTINEL = 0.0
@@ -545,8 +550,52 @@ def feature_contract(spec: FeatureSpec) -> dict[str, Any]:
         "selection": dict(_SELECTION),
         "settings": _settings_payload(spec),
     }
-    serialized = json.dumps(
-        contract, sort_keys=True, separators=(",", ":"), ensure_ascii=False
-    )
-    contract["spec_sha256"] = hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+    contract["spec_sha256"] = _contract_digest(contract)
     return contract
+
+
+def _contract_digest(body: Mapping[str, Any]) -> str:
+    """Return the digest of a contract body, ignoring any digest already in it."""
+    payload = {key: value for key, value in body.items() if key != "spec_sha256"}
+    serialized = json.dumps(
+        payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    )
+    return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+
+class ContractMismatch(ValueError):
+    """Raised when a saved feature contract does not describe the current specification."""
+
+
+def verify_contract(contract: Mapping[str, Any], spec: FeatureSpec) -> None:
+    """Raise when ``contract`` was not produced by a specification equal to ``spec``."""
+    if not isinstance(contract, Mapping):
+        raise ContractMismatch("A feature contract must be a mapping.")
+
+    stored = contract.get("spec_sha256")
+    if not isinstance(stored, str) or not stored:
+        raise ContractMismatch("The feature contract carries no spec_sha256.")
+    if _contract_digest(contract) != stored:
+        raise ContractMismatch(
+            "The feature contract does not hash to its own spec_sha256, so either the "
+            "digest or the body was edited after it was written."
+        )
+
+    current = feature_contract(spec)
+    if stored == current["spec_sha256"]:
+        return
+
+    divergent = sorted(
+        key
+        for key in set(current) | set(contract)
+        if key != "spec_sha256" and contract.get(key) != current.get(key)
+    )
+    saved_names = contract.get("feature_names")
+    if isinstance(saved_names, list) and len(saved_names) != len(current["feature_names"]):
+        raise ContractMismatch(
+            f"The feature contract describes {len(saved_names)} features, but this "
+            f"specification builds {len(current['feature_names'])}."
+        )
+    raise ContractMismatch(
+        f"The feature contract disagrees on {', '.join(divergent)}."
+    )
