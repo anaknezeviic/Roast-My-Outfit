@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
+import time
 from collections import Counter
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
@@ -16,6 +18,7 @@ from rmo import paths
 from rmo.config import load_perception_config
 from rmo.eval.metrics import metric_record, split_inputs, write_metric_record
 from rmo.eval.predictions import check_prediction_path, write_predictions
+from rmo.imaging import image_identity
 from rmo.perception.base import PerceptionModel
 from rmo.pipeline import create
 from rmo.schemas import GarmentSlot, OutfitDescription
@@ -377,11 +380,71 @@ def _run_config(model: PerceptionModel) -> dict[str, Any]:
     return {"model_id": model.name, "perception": load_perception_config()}
 
 
+def _read_cache(cache_path: Path) -> dict[str, OutfitDescription]:
+    """Return the descriptions an interrupted run already appended."""
+    if not cache_path.is_file():
+        return {}
+    lines = cache_path.read_text(encoding="utf-8").split("\n")
+    if lines and lines[-1]:
+        log.warning("discarding %d characters of a torn final cache line", len(lines.pop()))
+    cached: dict[str, OutfitDescription] = {}
+    for line in lines:
+        if not line:
+            continue
+        record = OutfitDescription.model_validate_json(line)
+        cached[record.image_id] = record
+    return cached
+
+
+def _predict_with_cache(
+    model: PerceptionModel,
+    images: Sequence[Path],
+    cache_path: Path,
+    *,
+    log_every: int = 25,
+) -> list[OutfitDescription]:
+    """Predict one image at a time, appending each record so a stopped run can resume."""
+    cached = _read_cache(cache_path)
+    paths.ensure_dir(cache_path.parent)
+    total = len(images)
+    log.info(
+        "resuming from %s with %d of %d images already predicted",
+        cache_path,
+        len(cached),
+        total,
+    )
+    descriptions: list[OutfitDescription] = []
+    started = time.monotonic()
+    fresh = 0
+    with cache_path.open("a", encoding="utf-8", newline="\n") as handle:
+        for position, image in enumerate(images, start=1):
+            image_id, _ = image_identity(image)
+            description = cached.get(image_id)
+            if description is None:
+                description = model.predict(image)
+                handle.write(f"{description.model_dump_json()}\n")
+                handle.flush()
+                os.fsync(handle.fileno())
+                fresh += 1
+            descriptions.append(description)
+            if position % log_every == 0 or position == total:
+                rate = (time.monotonic() - started) / fresh if fresh else 0.0
+                log.info(
+                    "predicted %d/%d images at %.2fs each, %.1f minutes left",
+                    position,
+                    total,
+                    rate,
+                    rate * (total - position) / 60,
+                )
+    return descriptions
+
+
 def run_evaluation(
     model: PerceptionModel,
     table_path: Path | None = None,
     *,
     predictions_out: Path | None = None,
+    cache_path: Path | None = None,
 ) -> EvaluationResult:
     """Run a perception model over the test split and log its metrics."""
     if predictions_out is not None:
@@ -393,12 +456,14 @@ def run_evaluation(
     images = [paths.raw_dir() / "images" / f"{image_id}.jpg" for image_id in sorted(test_ids)]
     with_readouts = getattr(model, "predict_batch_with_readouts", None)
     readouts: dict[str, Mapping[str, str]] = {}
-    if with_readouts is None:
-        descriptions = model.predict_batch(images)
-    else:
+    if with_readouts is not None:
         paired = with_readouts(images)
         descriptions = [description for description, _ in paired]
         readouts = {readout.image_id: readout.labels for _, readout in paired}
+    elif cache_path is not None:
+        descriptions = _predict_with_cache(model, images, cache_path)
+    else:
+        descriptions = model.predict_batch(images)
     if predictions_out is not None:
         write_predictions(
             descriptions,
@@ -409,6 +474,8 @@ def run_evaluation(
             expected_ids=test_ids,
         )
         log.info("wrote %d predictions to %s", len(descriptions), predictions_out)
+        if cache_path is not None:
+            cache_path.unlink(missing_ok=True)
     result = evaluate_predictions(held_out, descriptions, test_ids)
     if readouts:
         heads, heads_excluded = evaluate_readouts(held_out, readouts, test_ids)
@@ -417,9 +484,14 @@ def run_evaluation(
     return result
 
 
+def _model_slug(model_name: str) -> str:
+    """Return a filename-safe form of a model name that may carry path separators."""
+    return model_name.replace("/", "_")
+
+
 def _metrics_filename(model_name: str) -> str:
     """Return a legal filename stem for a model name that may carry path separators."""
-    return f"perception_{model_name.replace('/', '_')}.json"
+    return f"perception_{_model_slug(model_name)}.json"
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -432,6 +504,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--device", default=None)
     parser.add_argument("--metrics-out", type=Path, default=None)
     parser.add_argument("--predictions-out", type=Path, default=None)
+    parser.add_argument("--cache", type=Path, default=None)
+    parser.add_argument("--fresh", action="store_true")
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s %(message)s")
@@ -444,7 +518,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     else:
         model = create(args.perception)
 
-    result = run_evaluation(model, predictions_out=args.predictions_out)
+    cache_path = args.cache or (
+        paths.predictions_dir() / f"{_model_slug(model.name)}_test.cache.tmp"
+    )
+    if args.fresh:
+        cache_path.unlink(missing_ok=True)
+
+    result = run_evaluation(
+        model, predictions_out=args.predictions_out, cache_path=cache_path
+    )
     destination = args.metrics_out or paths.metrics_dir() / _metrics_filename(model.name)
     write_metric_record(
         perception_metric_record(result, model=model.name, config=_run_config(model)),

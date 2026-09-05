@@ -14,6 +14,7 @@ from rmo import paths
 from rmo.eval import metrics as eval_metrics
 from rmo.eval.perception_eval import (
     EvaluationResult,
+    _read_cache,
     compute_metrics,
     evaluate_predictions,
     evaluate_readouts,
@@ -689,3 +690,106 @@ def test_run_evaluation_leaves_the_heads_empty_without_readouts(
     assert result.heads == {}
     assert result.heads_excluded == {}
     assert result.fields["fabric"].n_comparisons == 6
+
+
+class CountingModel(PerceptionModel):
+    """Record which images were inferred and optionally fail on one of them."""
+
+    name = "counting"
+
+    def __init__(self, fail_on: str | None = None) -> None:
+        self.seen: list[str] = []
+        self._fail_on = fail_on
+
+    def predict(self, image: ImageInput) -> OutfitDescription:
+        """Return one garment, or raise to imitate an interrupted run."""
+        image_id = Path(image).stem
+        if image_id == self._fail_on:
+            raise RuntimeError("inference stopped")
+        self.seen.append(image_id)
+        return description(image_id, [Garment(slot=GarmentSlot.upper, category="shirt")])
+
+
+def staged_split(tmp_path: Path) -> Path:
+    """Write the two-image test split and label table used by the cache tests."""
+    split_file = tmp_path / "processed" / "splits" / "test.txt"
+    split_file.parent.mkdir(parents=True)
+    split_file.write_bytes(b"supervised\nunsupervised\n")
+    table = tmp_path / "outfits.parquet"
+    mixed_supervision_frame().to_parquet(table)
+    return table
+
+
+def test_an_interrupted_run_keeps_the_predictions_it_finished(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.setenv("RMO_DATA_ROOT", str(tmp_path))
+    table = staged_split(tmp_path)
+    cache = tmp_path / "cache.tmp"
+
+    with pytest.raises(RuntimeError, match="inference stopped"):
+        run_evaluation(CountingModel(fail_on="unsupervised"), table, cache_path=cache)
+
+    survivors = _read_cache(cache)
+    assert sorted(survivors) == ["supervised"]
+
+
+def test_a_resumed_run_only_infers_the_images_the_cache_is_missing(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.setenv("RMO_DATA_ROOT", str(tmp_path))
+    table = staged_split(tmp_path)
+    cache = tmp_path / "cache.tmp"
+    with pytest.raises(RuntimeError):
+        run_evaluation(CountingModel(fail_on="unsupervised"), table, cache_path=cache)
+
+    resumed = CountingModel()
+    result = run_evaluation(resumed, table, cache_path=cache)
+
+    assert resumed.seen == ["unsupervised"]
+    assert result.sample_size == 2
+
+
+def test_a_torn_final_cache_line_is_discarded_rather_than_failing_the_run(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.setenv("RMO_DATA_ROOT", str(tmp_path))
+    table = staged_split(tmp_path)
+    cache = tmp_path / "cache.tmp"
+    intact = description("supervised", [Garment(slot=GarmentSlot.upper, category="shirt")])
+    cache.write_text(
+        f"{intact.model_dump_json()}\n" + intact.model_dump_json()[:40],
+        encoding="utf-8",
+    )
+
+    resumed = CountingModel()
+    run_evaluation(resumed, table, cache_path=cache)
+
+    assert resumed.seen == ["unsupervised"]
+
+
+def test_publishing_the_predictions_clears_the_cache(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setenv("RMO_DATA_ROOT", str(tmp_path))
+    table = staged_split(tmp_path)
+    cache = tmp_path / "cache.tmp"
+
+    run_evaluation(
+        CountingModel(),
+        table,
+        predictions_out=tmp_path / "preds.jsonl",
+        cache_path=cache,
+    )
+
+    assert (tmp_path / "preds.jsonl").is_file()
+    assert not cache.exists()
+
+
+def test_the_cache_is_untouched_when_no_cache_path_is_given(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.setenv("RMO_DATA_ROOT", str(tmp_path))
+    table = staged_split(tmp_path)
+
+    run_evaluation(CountingModel(), table)
+
+    assert list(tmp_path.glob("*.tmp")) == []
