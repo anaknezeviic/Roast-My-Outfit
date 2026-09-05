@@ -33,6 +33,26 @@ python -m rmo.pipeline --image data/fixtures/images/fixture_000.png
 One `RoastOutput` is written to stdout as JSON. Any stage left unregistered falls back to its
 fixture-replay model. Add `--json` to get the description and the score alongside the roast.
 
+### Stage selection
+
+`--perception`, `--scorer` and `--roaster` each take a registered model name. Anything not named
+falls back to the fixture-replay default.
+
+| Flag | Names |
+|---|---|
+| `--perception` | `dummy_perception`, `cnn_multihead_v1`, `smolvlm` |
+| `--scorer` | `dummy_scorer`, `rule_scorer_v1` |
+| `--roaster` | `dummy_roaster`, `rule_roaster`, `gemini_roaster` |
+
+```powershell
+python -m rmo.pipeline --image data/fixtures/images/fixture_002.png --scorer rule_scorer_v1 --roaster rule_roaster --json
+```
+
+`rule_scorer_v1`, `rule_roaster` and both dummies run on CPU with the base install.
+`cnn_multihead_v1` needs the `cnn` extra and a trained checkpoint. `smolvlm` needs the `vlm` extra
+and downloads its checkpoint from Hugging Face on first use. `gemini_roaster` needs the API key
+described under [Gemini roast integration](#gemini-roast-integration).
+
 ## Gemini roast integration
 
 The rule-based roaster can also be replaced with a hosted Gemini roast generator. Copy the
@@ -45,8 +65,10 @@ python -m rmo.pipeline --image data/fixtures/images/fixture_002.png --roaster ge
 ```
 
 `GeminiRoaster` uses `gemini-3.6-flash` by default. Set `RMO_GEMINI_MODEL` in `.env` to override
-the model. If the API fails, returns invalid structured output, or fails the local safety checks,
-the pipeline falls back to `RuleBasedRoaster`.
+the model. The persona and the prompt live in `configs/roast.yaml`. If the API fails, returns
+invalid structured output, or fails the local safety checks, the pipeline falls back to
+`RuleBasedRoaster`; a rejected roast keeps the safety flags that rejected it. Without a key the
+roaster still constructs and roasts through `RuleBasedRoaster`, so the demo runs unconfigured.
 
 ## Dataset
 

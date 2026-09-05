@@ -105,6 +105,7 @@ data/processed/*
 !data/processed/splits/
 !data/processed/predictions/
 !data/processed/gold_harmony.csv
+data/processed/**/*.tmp
 
 models/*
 !models/README.md

@@ -6,14 +6,10 @@ product lands on the same side of the split.
 
 from __future__ import annotations
 
-import hashlib
 import itertools
-import json
 import logging
 import re
-import subprocess
 from pathlib import Path
-from uuid import uuid4
 
 import pandas as pd
 from sklearn.model_selection import StratifiedGroupKFold
@@ -74,32 +70,7 @@ def assert_split_disjoint() -> None:
 def _write_ids(path: Path, image_ids: set[str]) -> None:
     """Write sorted image stems with LF endings and a trailing newline."""
     content = "".join(f"{image_id}\n" for image_id in sorted(image_ids))
-    _write_bytes(path, content.encode("utf-8"))
-
-
-def _write_bytes(path: Path, payload: bytes) -> None:
-    """Replace ``path`` atomically so a failed write cannot leave a partial split."""
-    temporary = path.with_name(f".{path.name}.{uuid4().hex}.tmp")
-    try:
-        temporary.write_bytes(payload)
-        temporary.replace(path)
-    finally:
-        temporary.unlink(missing_ok=True)
-
-
-def _git_sha() -> str | None:
-    """Return the commit the splits were generated at, or None outside a work tree."""
-    try:
-        result = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
-            cwd=paths.repo_root(),
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-    except (OSError, subprocess.CalledProcessError):
-        return None
-    return result.stdout.strip() or None
+    paths.write_bytes_atomic(path, content.encode("utf-8"))
 
 
 def _write_manifest(directory: Path, splits: dict[str, set[str]]) -> None:
@@ -114,15 +85,12 @@ def _write_manifest(directory: Path, splits: dict[str, set[str]]) -> None:
         "n_groups": len(groups),
         "counts": {name: len(splits[name]) for name in SPLIT_NAMES},
         "sha256": {
-            f"{name}.txt": hashlib.sha256(
-                (directory / f"{name}.txt").read_bytes()
-            ).hexdigest()
+            f"{name}.txt": paths.file_sha256(directory / f"{name}.txt")
             for name in SPLIT_NAMES
         },
-        "git_sha": _git_sha(),
+        "git_sha": paths.git_sha(),
     }
-    payload = json.dumps(manifest, indent=2, sort_keys=True) + "\n"
-    _write_bytes(directory / MANIFEST_NAME, payload.encode("utf-8"))
+    paths.write_json_atomic(directory / MANIFEST_NAME, manifest)
 
 
 def write_splits(

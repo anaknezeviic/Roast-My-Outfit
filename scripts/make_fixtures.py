@@ -16,6 +16,7 @@ from PIL import Image
 
 from rmo import paths
 from rmo.schemas import (
+    ColorLabSource,
     ColorName,
     Fabric,
     Garment,
@@ -34,7 +35,7 @@ from rmo.schemas import (
     SubScores,
     Tone,
 )
-from rmo.scoring.palette import extract_palette
+from rmo.scoring.palette import mean_lab
 
 logger = logging.getLogger(__name__)
 
@@ -826,14 +827,12 @@ def _describe(spec: FixtureSpec, layout: list[tuple[int, int]], image: Image.Ima
     garments = []
     for garment, (top, bottom) in zip(spec.garments, layout):
         color_lab = None
-        color_lab_source = None
+        color_lab_source: ColorLabSource | None = None
         area_fraction = None
         if garment.color is not ColorName.unknown:
-            band = pixels[top:bottom]
-            entry = extract_palette(band, np.ones(band.shape[:2], dtype=np.uint8), n_colors=1)[0]
-            lightness, green_red, blue_yellow = entry.lab
+            lightness, green_red, blue_yellow = mean_lab(pixels[top:bottom])
             color_lab = (round(lightness, 2) + 0.0, round(green_red, 2) + 0.0, round(blue_yellow, 2) + 0.0)
-            color_lab_source = entry.source
+            color_lab_source = "mask"
             area_fraction = round((bottom - top) / CANVAS_HEIGHT, 4)
         garments.append(
             Garment(

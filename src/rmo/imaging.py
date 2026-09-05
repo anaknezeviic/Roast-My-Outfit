@@ -10,9 +10,21 @@ from PIL import Image
 
 from rmo import paths
 
-__all__ = ["ImageInput", "load_image"]
+__all__ = ["IN_MEMORY_ID", "ImageInput", "image_identity", "load_image"]
 
 ImageInput = Union[str, Path, Image.Image, np.ndarray]
+
+IN_MEMORY_ID = "in_memory"
+
+
+def image_identity(image: ImageInput) -> tuple[str, str]:
+    """Return the image id and source path, empty path for in-memory images."""
+    if isinstance(image, (str, Path)):
+        return Path(image).stem, str(image)
+    filename = getattr(image, "filename", "")
+    if filename:
+        return Path(filename).stem, str(filename)
+    return IN_MEMORY_ID, ""
 
 
 def load_image(image: ImageInput) -> Image.Image:

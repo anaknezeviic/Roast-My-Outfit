@@ -32,6 +32,10 @@ vlm = [
     "torchvision>=0.17",
     "transformers>=4.56",
 ]
+cnn = [
+    "rmo[vlm]",
+    "timm>=1.0",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]

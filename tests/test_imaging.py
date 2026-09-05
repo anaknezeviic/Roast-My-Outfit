@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import numpy as np
 import pytest
 from PIL import Image
 
-from rmo.imaging import load_image
+from rmo.imaging import image_identity, load_image
 
 
 @pytest.fixture()
@@ -52,3 +54,23 @@ def test_array_input_keeps_its_pixels() -> None:
 def test_array_input_rejects_anything_but_hwc_uint8(array) -> None:
     with pytest.raises(ValueError):
         load_image(array)
+
+
+def test_image_identity_uses_the_filename_stem() -> None:
+    stem = "WOMEN-Blouses-id_00000001-01_1_front"
+    text = f"a/b/{stem}.jpg"
+    assert image_identity(text) == (stem, text)
+    assert image_identity(Path(text)) == (stem, str(Path(text)))
+
+
+def test_image_identity_of_an_in_memory_image() -> None:
+    assert image_identity(np.zeros((2, 2, 3), dtype=np.uint8)) == ("in_memory", "")
+
+
+def test_image_identity_of_an_opened_image_follows_its_file(png) -> None:
+    with Image.open(png) as handle:
+        assert image_identity(handle) == (png.stem, str(png))
+
+
+def test_image_identity_after_load_image_is_in_memory(png) -> None:
+    assert image_identity(load_image(png)) == ("in_memory", "")

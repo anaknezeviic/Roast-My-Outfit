@@ -10,6 +10,7 @@ from collections import Counter
 from itertools import chain
 from pathlib import Path
 
+import numpy as np
 import pytest
 
 from conftest import EXPECTED_IDS
@@ -28,7 +29,7 @@ from rmo.schemas import (
     RoastOutput,
     Tone,
 )
-from rmo.scoring.palette import nearest_color_name
+from rmo.scoring.palette import mean_lab, nearest_color_name
 
 FLAGGED_CATEGORIES = [
     "body",
@@ -318,3 +319,12 @@ def test_regenerating_the_corpus_reproduces_it_byte_for_byte(tmp_path: Path) -> 
     committed.pop("golden_v1.0.0.jsonl")
     assert sorted(second) == sorted(committed)
     assert [name for name in second if second[name] != committed[name]] == []
+
+
+def test_committed_colour_lab_is_the_whole_canvas_mean(
+    descriptions: dict[str, OutfitDescription],
+) -> None:
+    image = load_image(fixtures_dir() / "images" / "fx_deg_00.png")
+    measured = tuple(round(value, 2) for value in mean_lab(np.asarray(image, dtype=np.uint8)))
+    garment = descriptions["fx_deg_00"].garments[0]
+    assert garment.color_lab == measured

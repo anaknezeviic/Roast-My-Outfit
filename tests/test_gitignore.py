@@ -14,8 +14,10 @@ MUST_BE_COMMITTABLE = [
     "data/processed/splits/train.txt",
     "data/processed/splits/MANIFEST.json",
     "data/processed/predictions/cnn_val.jsonl",
+    "data/processed/predictions/perception_vlm_test.manifest.json",
     "data/processed/gold_harmony.csv",
     "models/README.md",
+    "results/metrics/perception_vlm.json",
 ]
 
 MUST_BE_IGNORED = [
@@ -26,6 +28,10 @@ MUST_BE_IGNORED = [
     "data/processed/outfits.parquet",
     "models/perception_cnn_20260901/model.safetensors",
     "logs/rmo.log",
+    "results/metrics/.perception_vlm.json.deadbeef.tmp",
+    "data/processed/predictions/.cnn_val.jsonl.deadbeef.tmp",
+    "data/processed/predictions/.cnn_val.manifest.json.deadbeef.tmp",
+    "data/processed/splits/.train.txt.deadbeef.tmp",
 ]
 
 

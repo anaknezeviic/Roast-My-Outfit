@@ -5,14 +5,19 @@ from __future__ import annotations
 import argparse
 import logging
 from collections import Counter
-from collections.abc import Sequence
-from dataclasses import dataclass
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass, field, replace
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 
 from rmo import paths
+from rmo.config import load_perception_config
+from rmo.eval.metrics import metric_record, split_inputs, write_metric_record
+from rmo.eval.predictions import check_prediction_path, write_predictions
 from rmo.perception.base import PerceptionModel
+from rmo.pipeline import create
 from rmo.schemas import GarmentSlot, OutfitDescription
 from rmo.splits import load_split
 
@@ -23,8 +28,10 @@ __all__ = [
     "FieldMetrics",
     "compute_metrics",
     "evaluate_predictions",
+    "evaluate_readouts",
     "is_fallback",
     "log_evaluation",
+    "perception_metric_record",
     "run_evaluation",
 ]
 
@@ -59,6 +66,8 @@ _SHAPE_FIELDS: dict[str, tuple[str, str, tuple[GarmentSlot, ...]]] = {
     ),
 }
 
+_SHAPE_HEADS = frozenset({"sleeve_length", "lower_length", "neckline"})
+
 
 @dataclass(frozen=True)
 class FieldMetrics:
@@ -66,7 +75,7 @@ class FieldMetrics:
 
     accuracy: float
     macro_f1: float
-    sample_size: int
+    n_comparisons: int
     confusion: dict[tuple[str, str], int]
 
 
@@ -78,6 +87,10 @@ class EvaluationResult:
     schema_validity: float
     valid_generations: int
     sample_size: int
+    excluded: dict[str, int] = field(default_factory=dict)
+    undefined_fields: dict[str, str] = field(default_factory=dict)
+    heads: dict[str, FieldMetrics] = field(default_factory=dict)
+    heads_excluded: dict[str, int] = field(default_factory=dict)
 
 
 def compute_metrics(actual: Sequence[str], predicted: Sequence[str]) -> FieldMetrics:
@@ -109,7 +122,7 @@ def compute_metrics(actual: Sequence[str], predicted: Sequence[str]) -> FieldMet
     return FieldMetrics(
         accuracy=correct / len(actual),
         macro_f1=sum(f1_scores) / len(f1_scores),
-        sample_size=len(actual),
+        n_comparisons=len(actual),
         confusion=dict(sorted(confusion.items())),
     )
 
@@ -180,10 +193,15 @@ def evaluate_predictions(
         raise ValueError("Held-out labels do not exactly match the test split.")
     if set(predictions) != expected_ids:
         raise ValueError("Predictions do not exactly match the test split.")
+    if "has_shape" not in frame.columns:
+        raise ValueError("Held-out labels need a has_shape column to mask unsupervised heads.")
+    if frame["has_shape"].dtype != bool:
+        raise ValueError("has_shape must be a boolean column to mask unsupervised heads.")
 
     pairs: dict[str, tuple[list[str], list[str]]] = {
         field: ([], []) for field in (*_SLOT_FIELDS, *_SHAPE_FIELDS)
     }
+    excluded: dict[str, int] = {field: 0 for field in (*_SLOT_FIELDS, *_SHAPE_FIELDS)}
     for image_id in sorted(expected_ids):
         row = labels.loc[image_id]
         description = predictions[image_id]
@@ -192,15 +210,22 @@ def evaluate_predictions(
             for slots, column in slot_columns:
                 actual.append(str(row[column]))
                 predicted.append(_slot_value(description, slots, field))
+        supervised = bool(row["has_shape"])
         for field, (column, attribute, slots) in _SHAPE_FIELDS.items():
+            if not supervised:
+                excluded[field] += 1
+                continue
             actual, predicted = pairs[field]
             actual.append(str(row[column]))
             predicted.append(_shape_value(description, attribute, slots))
 
-    field_metrics = {
-        field: compute_metrics(actual, predicted)
-        for field, (actual, predicted) in pairs.items()
-    }
+    field_metrics: dict[str, FieldMetrics] = {}
+    undefined_fields: dict[str, str] = {}
+    for field, (actual, predicted) in pairs.items():
+        if actual:
+            field_metrics[field] = compute_metrics(actual, predicted)
+        else:
+            undefined_fields[field] = "no_supervised_rows"
     valid = sum(not is_fallback(predictions[image_id]) for image_id in expected_ids)
     sample_size = len(expected_ids)
     return EvaluationResult(
@@ -208,7 +233,40 @@ def evaluate_predictions(
         schema_validity=valid / sample_size if sample_size else 0.0,
         valid_generations=valid,
         sample_size=sample_size,
+        excluded=excluded,
+        undefined_fields=undefined_fields,
     )
+
+
+def evaluate_readouts(
+    frame: pd.DataFrame,
+    readouts: Mapping[str, Mapping[str, str]],
+    expected_ids: set[str],
+) -> tuple[dict[str, FieldMetrics], dict[str, int]]:
+    """Score each raw head against the label column it was trained on."""
+    if set(readouts) != expected_ids:
+        raise ValueError("Readouts do not exactly match the evaluated split.")
+    labels = frame.set_index("image_id")
+    heads = sorted({head for reading in readouts.values() for head in reading})
+    pairs: dict[str, tuple[list[str], list[str]]] = {head: ([], []) for head in heads}
+    excluded: dict[str, int] = {head: 0 for head in heads}
+    for image_id in sorted(expected_ids):
+        row = labels.loc[image_id]
+        reading = readouts[image_id]
+        supervised = bool(row["has_shape"])
+        for head in heads:
+            if head in _SHAPE_HEADS and not supervised:
+                excluded[head] += 1
+                continue
+            actual, predicted = pairs[head]
+            actual.append(str(row[head]))
+            predicted.append(str(reading[head]))
+    measured = {
+        head: compute_metrics(actual, predicted)
+        for head, (actual, predicted) in pairs.items()
+        if actual
+    }
+    return measured, excluded
 
 
 def log_evaluation(result: EvaluationResult) -> None:
@@ -216,11 +274,12 @@ def log_evaluation(result: EvaluationResult) -> None:
     log.info("perception evaluation sample_size=%d split=test", result.sample_size)
     for field, metrics in result.fields.items():
         log.info(
-            "field=%s accuracy=%.6f macro_f1=%.6f comparisons=%d",
+            "field=%s accuracy=%.6f macro_f1=%.6f n_comparisons=%d excluded=%d",
             field,
             metrics.accuracy,
             metrics.macro_f1,
-            metrics.sample_size,
+            metrics.n_comparisons,
+            result.excluded.get(field, 0),
         )
         for (actual, predicted), count in metrics.confusion.items():
             log.info(
@@ -230,6 +289,22 @@ def log_evaluation(result: EvaluationResult) -> None:
                 predicted,
                 count,
             )
+    for field, reason in result.undefined_fields.items():
+        log.info(
+            "field=%s undefined excluded=%d reason=%s",
+            field,
+            result.excluded.get(field, 0),
+            reason,
+        )
+    for head, metrics in result.heads.items():
+        log.info(
+            "head=%s accuracy=%.6f macro_f1=%.6f n_comparisons=%d excluded=%d",
+            head,
+            metrics.accuracy,
+            metrics.macro_f1,
+            metrics.n_comparisons,
+            result.heads_excluded.get(head, 0),
+        )
     log.info(
         "schema_validity=%.6f valid=%d",
         result.schema_validity,
@@ -237,34 +312,145 @@ def log_evaluation(result: EvaluationResult) -> None:
     )
 
 
+def _metric_block(metrics: FieldMetrics, excluded: int) -> dict[str, Any]:
+    """Return one measured per-field block, key-identical to the undefined form."""
+    return {
+        "accuracy": metrics.accuracy,
+        "confusion": [
+            {"actual": actual, "count": count, "predicted": predicted}
+            for (actual, predicted), count in sorted(metrics.confusion.items())
+        ],
+        "excluded": excluded,
+        "macro_f1": metrics.macro_f1,
+        "n": metrics.n_comparisons,
+        "reason": None,
+    }
+
+
+def perception_metric_record(
+    result: EvaluationResult,
+    *,
+    model: str,
+    config: Mapping[str, Any],
+    split: str = "test",
+    seed: int | None = None,
+) -> dict[str, Any]:
+    """Return the shared run stamp for one perception evaluation."""
+    fields: dict[str, Any] = {}
+    for name, metrics in result.fields.items():
+        fields[name] = _metric_block(metrics, result.excluded.get(name, 0))
+    for name, reason in result.undefined_fields.items():
+        fields[name] = {
+            "accuracy": None,
+            "confusion": [],
+            "excluded": result.excluded.get(name, 0),
+            "macro_f1": None,
+            "n": 0,
+            "reason": reason,
+        }
+
+    return metric_record(
+        stage="perception",
+        model=model,
+        split=split,
+        n_items=result.sample_size,
+        metrics={
+            "fields": fields,
+            "heads": {
+                name: _metric_block(metrics, result.heads_excluded.get(name, 0))
+                for name, metrics in result.heads.items()
+            },
+            "schema_validity": {
+                "n": result.sample_size,
+                "valid": result.valid_generations,
+                "value": result.schema_validity,
+            },
+        },
+        config=config,
+        seed=seed,
+        inputs=split_inputs(split),
+    )
+
+
+def _run_config(model: PerceptionModel) -> dict[str, Any]:
+    """Return the configuration identity stamped into every artefact of one run."""
+    return {"model_id": model.name, "perception": load_perception_config()}
+
+
 def run_evaluation(
     model: PerceptionModel,
     table_path: Path | None = None,
+    *,
+    predictions_out: Path | None = None,
 ) -> EvaluationResult:
     """Run a perception model over the test split and log its metrics."""
+    if predictions_out is not None:
+        check_prediction_path(predictions_out)
     test_ids = load_split("test")
     source = table_path or paths.data_root() / "processed" / "outfits.parquet"
     frame = pd.read_parquet(source)
     held_out = frame.loc[frame["image_id"].isin(test_ids)].copy()
     images = [paths.raw_dir() / "images" / f"{image_id}.jpg" for image_id in sorted(test_ids)]
-    descriptions = model.predict_batch(images)
+    with_readouts = getattr(model, "predict_batch_with_readouts", None)
+    readouts: dict[str, Mapping[str, str]] = {}
+    if with_readouts is None:
+        descriptions = model.predict_batch(images)
+    else:
+        paired = with_readouts(images)
+        descriptions = [description for description, _ in paired]
+        readouts = {readout.image_id: readout.labels for _, readout in paired}
+    if predictions_out is not None:
+        write_predictions(
+            descriptions,
+            predictions_out,
+            split="test",
+            model=model.name,
+            config=_run_config(model),
+            expected_ids=test_ids,
+        )
+        log.info("wrote %d predictions to %s", len(descriptions), predictions_out)
     result = evaluate_predictions(held_out, descriptions, test_ids)
+    if readouts:
+        heads, heads_excluded = evaluate_readouts(held_out, readouts, test_ids)
+        result = replace(result, heads=heads, heads_excluded=heads_excluded)
     log_evaluation(result)
     return result
 
 
+def _metrics_filename(model_name: str) -> str:
+    """Return a legal filename stem for a model name that may carry path separators."""
+    return f"perception_{model_name.replace('/', '_')}.json"
+
+
 def main(argv: Sequence[str] | None = None) -> int:
-    """Run the configured SmolVLM checkpoint on the held-out split."""
+    """Run a registered perception model on the held-out split."""
+    from rmo.perception.vlm import REGISTRY_NAME
+
     parser = argparse.ArgumentParser(description="Evaluate perception on the test split.")
+    parser.add_argument("--perception", default=REGISTRY_NAME)
     parser.add_argument("--model-id", default=None)
     parser.add_argument("--device", default=None)
+    parser.add_argument("--metrics-out", type=Path, default=None)
+    parser.add_argument("--predictions-out", type=Path, default=None)
     args = parser.parse_args(argv)
 
-    from rmo.perception.vlm import DEFAULT_MODEL_ID, SmolVLMPerception
-
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s %(message)s")
-    model = SmolVLMPerception(args.model_id or DEFAULT_MODEL_ID, device=args.device)
-    run_evaluation(model)
+    if args.perception == REGISTRY_NAME:
+        from rmo.perception.vlm import DEFAULT_MODEL_ID, SmolVLMPerception
+
+        model: PerceptionModel = SmolVLMPerception(
+            args.model_id or DEFAULT_MODEL_ID, device=args.device
+        )
+    else:
+        model = create(args.perception)
+
+    result = run_evaluation(model, predictions_out=args.predictions_out)
+    destination = args.metrics_out or paths.metrics_dir() / _metrics_filename(model.name)
+    write_metric_record(
+        perception_metric_record(result, model=model.name, config=_run_config(model)),
+        destination,
+    )
+    log.info("wrote perception metrics to %s", destination)
     return 0
 
 

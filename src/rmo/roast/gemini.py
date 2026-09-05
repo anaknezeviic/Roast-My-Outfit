@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import logging
 import os
+from pathlib import Path
 from typing import Annotated, Any
 
 from pydantic import BaseModel, Field
 
+from rmo.config import load_roast_config
 from rmo.paths import repo_root
 from rmo.roast.base import RoastGenerator
 from rmo.roast.rules import RuleBasedRoaster
@@ -38,8 +40,11 @@ class GeminiRoaster(RoastGenerator):
         *,
         client: Any | None = None,
         model: str | None = None,
+        config_path: Path | None = None,
     ) -> None:
         self._fallback = RuleBasedRoaster()
+        self._config = load_roast_config(config_path)
+        self._client: Any | None
 
         if client is None:
             self._load_dotenv()
@@ -52,10 +57,11 @@ class GeminiRoaster(RoastGenerator):
 
         api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
-            raise RuntimeError(
-                "GEMINI_API_KEY is not set. Put it in <project-root>/.env as "
-                "GEMINI_API_KEY=your_key, or define it as an environment variable."
+            log.warning(
+                "GEMINI_API_KEY is not set; roasting with the rule-based generator instead."
             )
+            self._client = None
+            return
 
         try:
             from google import genai
@@ -82,11 +88,15 @@ class GeminiRoaster(RoastGenerator):
         """Generate a Gemini roast, or return the deterministic fallback on failure."""
         fallback = self._fallback.generate(description, score)
 
-        # Do not spend an API request when upstream data is explicitly unscorable.
+        if self._client is None:
+            return fallback
+
         if not fallback.grounded_garments and score.overall == 0.0:
             return fallback
 
         prompt = self._build_prompt(description, score, fallback)
+
+        log.debug("gemini request: model=%s input=%s", self.model, prompt)
 
         try:
             interaction = self._client.interactions.create(
@@ -98,7 +108,16 @@ class GeminiRoaster(RoastGenerator):
                     "schema": _GeminiRoastResponse.model_json_schema(),
                 },
             )
-            generated = _GeminiRoastResponse.model_validate_json(interaction.output_text)
+            output_text = interaction.output_text
+            log.debug("gemini response: model=%s output=%s", self.model, output_text)
+            log.info(
+                "gemini roast for %s: model=%s prompt_chars=%d response_chars=%d",
+                description.image_id,
+                self.model,
+                len(prompt),
+                len(output_text or ""),
+            )
+            generated = _GeminiRoastResponse.model_validate_json(output_text)
         except Exception as exc:
             log.warning(
                 "Gemini roast generation failed (%s); using rule-based fallback.",
@@ -112,7 +131,9 @@ class GeminiRoaster(RoastGenerator):
                 "Gemini roast failed local safety checks (%s); using rule-based fallback.",
                 ", ".join(safety_flags),
             )
-            return fallback
+            rejected = fallback.model_copy(deep=True)
+            rejected.safety_flags = safety_flags
+            return rejected
 
         return RoastOutput(
             image_id=description.image_id,
@@ -126,10 +147,10 @@ class GeminiRoaster(RoastGenerator):
         )
 
     def _build_prompt(
-    self,
-    description: OutfitDescription,
-    score: OutfitScore,
-    fallback: RoastOutput,
+        self,
+        description: OutfitDescription,
+        score: OutfitScore,
+        fallback: RoastOutput,
     ) -> str:
         garments = "\n".join(
             f"- {garment.ref}: {garment.color.value} {garment.category}, "
@@ -143,103 +164,10 @@ class GeminiRoaster(RoastGenerator):
             for issue in score.worst_issues(limit=3)
         ) or "- No issues were reported."
 
-        return f"""
-    You are writing the final user-facing response for an app called Roast My Outfit.
-
-    Your job is to roast the OUTFIT, not describe it and not analyse it like a report.
-
-    The response has two clearly different parts:
-
-    1. roast
-    2. suggestions
-
-    ROAST STYLE
-
-    Write a short, natural roast that sounds like something a witty friend would actually say.
-
-    The roast should:
-    - Be direct and conversational.
-    - Usually be one sentence, or at most two short sentences.
-    - Focus on the strongest or funniest styling problem.
-    - Turn the main problem into one clear joke or observation.
-    - Feel spontaneous rather than technical or analytical.
-    - Mention clothing pieces only when they make the joke better.
-    - Prefer mentioning zero, one, or two garments rather than listing the whole outfit.
-    - Never enumerate everything the person is wearing.
-    - Never mention internal garment references such as upper_0, lower_0, footwear_0.
-    - Never mention issue codes, severity labels, subscores, or the numerical outfit score.
-    - Do not simply repeat the scoring explanation.
-    - Avoid formulaic phrases such as "the X and the Y are competing" unless they genuinely sound natural.
-    - Avoid explaining the joke after making it.
-
-    The roast should NOT sound like:
-    "The blouse, skirt, sandals, scarf and bag all use different colours and patterns."
-
-    It should sound more like:
-    "This outfit has five different ideas and somehow all of them got approved."
-
-    Or:
-    "The patterns are fighting for custody of the outfit."
-
-    Or:
-    "The dress code appears to have been decided by committee."
-
-    These examples illustrate the style only. Do not copy them mechanically.
-
-    Requested tone: {fallback.tone.value}
-
-    SUGGESTIONS STYLE
-
-    Suggestions are separate from the roast.
-
-    They should:
-    - Be practical and useful rather than funny.
-    - Clearly explain how to improve the outfit.
-    - Be concise.
-    - Usually provide 2 or 3 suggestions.
-    - Focus first on the issues that most affect the outfit.
-    - Mention specific garments, colours, patterns, fabrics, or accessories when useful.
-    - It is completely fine to mention several or all relevant clothing items here.
-    - Each suggestion should describe a concrete change the wearer could make.
-    - Do not repeat the roast.
-    - Do not include jokes or insults in the suggestions.
-
-    Example suggestion style:
-    "Keep the floral blouse, but pair it with a solid neutral skirt."
-    "Repeat the sandal colour in one accessory to make the palette feel intentional."
-
-    SAFETY
-
-    Roast the clothes and styling only, never the person wearing them.
-
-    Do not comment on:
-    - body shape
-    - weight
-    - age
-    - race or ethnicity
-    - skin tone
-    - gender
-    - attractiveness
-    - disability
-    - health
-    - posture
-    - any other personal characteristic
-
-    Do not use profanity, slurs, threats, sexual content, or humiliating language aimed at the wearer.
-
-    GROUNDING
-
-    Use only the outfit information below.
-    Do not invent garments, colours, fabrics, patterns, accessories, or styling problems.
-
-    Outfit description:
-    {description.caption or "(no caption)"}
-
-    Garments:
-    {garments}
-
-    Styling issues:
-    {issues}
-
-    If no meaningful styling issues are present, make the roast a short playful compliment and make the suggestions positive and minimal.
-    """.strip()
+        body = self._config["prompt_template"].format(
+            tone=fallback.tone.value,
+            caption=description.caption or "(no caption)",
+            garments=garments,
+            issues=issues,
+        )
+        return f"{self._config['persona']}\n\n{body}".strip()

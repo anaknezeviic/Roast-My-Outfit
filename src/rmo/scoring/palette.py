@@ -6,10 +6,17 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from rmo.config import ConfigError, load_scoring_config
 from rmo.imaging import load_image
 from rmo.schemas import ColorLabSource, ColorName
 
-__all__ = ["PaletteEntry", "extract_palette", "nearest_color_name"]
+__all__ = [
+    "PaletteEntry",
+    "extract_palette",
+    "mean_lab",
+    "nearest_color_name",
+    "reference_lab",
+]
 
 _D65_WHITE = np.array([0.95047, 1.0, 1.08883])
 
@@ -82,8 +89,108 @@ def nearest_color_name(lab: tuple[float, float, float]) -> ColorName:
     return _REFERENCE_NAMES[int(np.argmin(np.linalg.norm(_REFERENCE_LAB - point, axis=1)))]
 
 
+def reference_lab(name: ColorName) -> tuple[float, float, float] | None:
+    """Return the reference CIELAB value of a named colour, ``None`` for ``unknown``."""
+    if name not in _REFERENCE_RGB:
+        return None
+    row = _REFERENCE_LAB[_REFERENCE_NAMES.index(name)]
+    return (float(row[0]), float(row[1]), float(row[2]))
+
+
+def mean_lab(pixels: np.ndarray) -> tuple[float, float, float]:
+    """Return the mean CIELAB value of an ``(..., 3)`` array of 0-255 sRGB pixels."""
+    array = np.asarray(pixels)
+    if array.shape[-1:] != (3,):
+        raise ValueError(
+            f"Pixels must have three channels on the last axis; got shape {array.shape}."
+        )
+    if not np.issubdtype(array.dtype, np.integer):
+        raise ValueError(f"Pixels must be integers in [0, 255]; got dtype {array.dtype}.")
+    if array.size and (array.min() < 0 or array.max() > 255):
+        raise ValueError("Pixels must be integers in [0, 255]; got a value outside that range.")
+    values = _srgb_to_lab(array.astype(np.uint8)).reshape(-1, 3)
+    if not len(values):
+        raise ValueError("Cannot average an empty pixel array.")
+    mean = values.mean(axis=0)
+    return (float(mean[0]), float(mean[1]), float(mean[2]))
+
+
+@dataclass(frozen=True, slots=True)
+class _PaletteSettings:
+    """Clustering budget and filtering thresholds read from the scoring config."""
+
+    seed: int
+    n_clusters: int
+    n_init: int
+    min_area_fraction: float
+    max_fit_pixels: int
+
+
+def _positive_int(section: dict, key: str) -> int:
+    """Return a strictly positive integer option."""
+    value = section.get(key)
+    if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+        raise ConfigError(f"palette.{key} must be a positive integer; got {value!r}.")
+    return value
+
+
+def _palette_settings() -> _PaletteSettings:
+    """Return the validated ``palette`` section of the scoring configuration."""
+    section = load_scoring_config().get("palette")
+    if not isinstance(section, dict):
+        raise ConfigError("Scoring configuration has no palette section.")
+
+    seed = section.get("seed")
+    if isinstance(seed, bool) or not isinstance(seed, int) or seed < 0:
+        raise ConfigError(f"palette.seed must be a non-negative integer; got {seed!r}.")
+
+    floor = section.get("min_area_fraction")
+    if (
+        isinstance(floor, bool)
+        or not isinstance(floor, (int, float))
+        or not 0.0 <= floor < 1.0
+    ):
+        raise ConfigError(f"palette.min_area_fraction must be in [0, 1); got {floor!r}.")
+
+    return _PaletteSettings(
+        seed=seed,
+        n_clusters=_positive_int(section, "n_clusters"),
+        n_init=_positive_int(section, "n_init"),
+        min_area_fraction=float(floor),
+        max_fit_pixels=_positive_int(section, "max_fit_pixels"),
+    )
+
+
+def _fit_sample(values: np.ndarray, budget: int, seed: int) -> np.ndarray:
+    """Return at most ``budget`` rows of ``values``, chosen deterministically."""
+    if len(values) <= budget:
+        return values
+    # k-means centres depend on row order, so the drawn index is sorted before slicing.
+    index = np.sort(np.random.default_rng(seed).choice(len(values), size=budget, replace=False))
+    return values[index]
+
+
+def _cluster_region(region: np.ndarray, settings: _PaletteSettings) -> list[tuple[int, np.ndarray]]:
+    """Return the population and centroid of every nonempty cluster of one region."""
+    from sklearn.cluster import KMeans
+
+    sample = _fit_sample(region, settings.max_fit_pixels, settings.seed)
+    k = min(settings.n_clusters, len(np.unique(sample, axis=0)))
+    model = KMeans(n_clusters=k, n_init=settings.n_init, random_state=settings.seed).fit(sample)
+    assigned = model.predict(region)
+    clusters = []
+    for cid in range(k):
+        members = region[assigned == cid]
+        if len(members):
+            clusters.append((len(members), members.mean(axis=0)))
+    return clusters
+
+
 def extract_palette(image, mask, *, n_colors: int = 3) -> list[PaletteEntry]:
     """Return the dominant colours of ``image``, ordered by descending area fraction."""
+    if isinstance(n_colors, bool) or not isinstance(n_colors, int) or n_colors < 1:
+        raise ValueError(f"n_colors must be a positive integer; got {n_colors!r}.")
+
     pixels = np.asarray(load_image(image), dtype=np.uint8)
     shape = pixels.shape[:2]
 
@@ -100,23 +207,32 @@ def extract_palette(image, mask, *, n_colors: int = 3) -> list[PaletteEntry]:
     if not foreground.any():
         return []
 
-    lab = _srgb_to_lab(pixels)
-    regions = [(int(np.count_nonzero(labels == label)), label) for label in np.unique(labels[foreground])]
-    regions.sort(key=lambda region: -region[0])
+    settings = _palette_settings()
+    total = int(np.count_nonzero(foreground))
 
-    kept = regions[:n_colors]
-    total = sum(count for count, _ in kept)
-
-    entries = []
-    for count, label in kept:
-        mean = lab[labels == label].mean(axis=0)
-        centroid = (float(mean[0]), float(mean[1]), float(mean[2]))
-        entries.append(
-            PaletteEntry(
-                lab=centroid,
-                name=nearest_color_name(centroid),
-                area_fraction=count / total,
-                source=source,
+    candidates = []
+    for label in np.unique(labels[foreground]):
+        region = _srgb_to_lab(pixels[labels == label])
+        for mass, centroid in _cluster_region(region, settings):
+            candidates.append(
+                (mass, int(label), (float(centroid[0]), float(centroid[1]), float(centroid[2])))
             )
+
+    kept = [item for item in candidates if item[0] / total >= settings.min_area_fraction]
+    if not kept:
+        kept = [max(candidates, key=lambda item: item[0])]
+
+    kept.sort(key=lambda item: (-item[0], item[1], item[2]))
+    kept = kept[:n_colors]
+    retained = sum(mass for mass, _, _ in kept)
+
+    return [
+        PaletteEntry(
+            lab=centroid,
+            name=nearest_color_name(centroid),
+            area_fraction=mass / retained,
+            source=source,
         )
-    return entries
+        for mass, _, centroid in kept
+    ]
+

@@ -1,0 +1,147 @@
+palette:
+  seed: 20260101
+  n_clusters: 3
+  n_init: 3
+  min_area_fraction: 0.02
+  max_fit_pixels: 20000
+
+color:
+  achromatic_chroma: 5.0
+  analogous_max: 30.0
+  complementary_tolerance: 20.0
+  triadic_tolerance: 20.0
+  hue_separation: 30.0
+  max_hue_families: 3
+
+formality:
+  max_spread: 2
+  major_spread: 4
+  levels:
+    tank top: 0
+    hoodie: 0
+    t shirt: 1
+    sweater: 1
+    blouse: 2
+    shirt: 3
+    shorts: 0
+    jeans: 1
+    cargo trousers: 1
+    chinos: 2
+    pleated skirt: 2
+    trousers: 3
+    denim jacket: 1
+    parka: 1
+    cardigan: 2
+    trench coat: 3
+    blazer: 4
+    shirt dress: 2
+    slip dress: 3
+    wrap dress: 3
+    romper: 1
+    running shoes: 0
+    sneakers: 1
+    sandals: 1
+    ankle boots: 2
+    loafers: 3
+    heeled pumps: 4
+    baseball cap: 0
+    beanie: 1
+    wide brim hat: 2
+    wool scarf: 1
+    silk scarf: 3
+    backpack: 1
+    crossbody bag: 2
+    tote bag: 2
+    woven belt: 1
+    leather belt: 3
+    sheer tights: 3
+    leather gloves: 3
+    sunglasses: 2
+    hoop earrings: 2
+    pendant necklace: 2
+    signet ring: 2
+    stacked bangles: 2
+
+season:
+  heavy_warmth: 0.7
+  summer_exposure: 0.6
+  max_fabric_warmth_spread: 1.2
+  fabric_warmth:
+    chiffon: -0.5
+    cotton: 0.0
+    other: 0.0
+    leather: 0.3
+    denim: 0.4
+    knitted: 0.8
+    furry: 1.0
+  sleeve_exposure:
+    long: -0.4
+    medium: 0.2
+    not_long: 0.4
+    short: 0.6
+    sleeveless: 1.0
+  length_exposure:
+    long: -0.4
+    three_quarter: 0.1
+    medium_short: 0.6
+    three_point: 1.0
+
+harmony:
+  min_lightness_contrast: 15.0
+  monochrome_lightness_contrast: 8.0
+  max_patterns: 1
+
+proportion:
+  accessory_slots: [headwear, neckwear, eyewear, bag, belt, gloves, jewelry]
+  dominant_slots: [dress, romper, outer]
+  core_slots: [upper, lower, dress, romper]
+  max_accessories: 3
+  max_single_area: 0.6
+  max_upper_lower_ratio: 3.0
+  min_measured_areas: 3
+  min_garments_for_footwear: 2
+
+weights:
+  color_harmony: 1.0
+  formality_consistency: 1.0
+  seasonality: 1.0
+  proportion: 1.0
+
+penalties:
+  hue_clash: 25.0
+  too_many_colors: 20.0
+  low_contrast: 15.0
+  monochrome_flat: 12.0
+  pattern_clash: 18.0
+  formality_mismatch_per_level: 22.0
+  season_mismatch: 30.0
+  fabric_mismatch: 15.0
+  dominant_area: 20.0
+  upper_lower_ratio: 20.0
+  missing_footwear: 25.0
+  accessory_overload: 18.0
+
+defaults:
+  base: 100.0
+  unscorable: 50.0
+  max_issue_refs: 5
+
+features:
+  version: "1.0.0"
+  slots: [upper, outer, lower, dress, footwear]
+  blocks:
+    - slot_presence
+    - slot_color
+    - slot_pattern
+    - slot_fabric
+    - slot_sleeve_length
+    - slot_length
+    - slot_neckline
+    - slot_area
+    - slot_formality
+    - slot_season
+    - color_aggregates
+    - formality_aggregates
+    - season_aggregates
+    - proportion_aggregates
+    - composition

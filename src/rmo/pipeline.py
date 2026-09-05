@@ -121,19 +121,46 @@ def build_parser() -> argparse.ArgumentParser:
         help="Emit the description and the score alongside the roast.",
     )
     parser.add_argument(
+        "--perception",
+        metavar="NAME",
+        default=None,
+        help="Registered perception model name to use. Defaults to the pipeline fallback.",
+    )
+    parser.add_argument(
+        "--scorer",
+        metavar="NAME",
+        default=None,
+        help="Registered scoring model name to use. Defaults to the pipeline fallback.",
+    )
+    parser.add_argument(
         "--roaster",
         metavar="NAME",
         default=None,
         help="Registered roast-generator name to use. Defaults to the pipeline fallback.",
     )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Log at DEBUG, which includes full hosted request and response bodies.",
+    )
     return parser
+
+
+def _selected(name: str | None) -> Any | None:
+    """Return the model registered under ``name``, or ``None`` when nothing was asked for."""
+    return None if name is None else create(name)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     """Run one photograph through every stage and write the result to stdout."""
     args = build_parser().parse_args(argv)
-    roaster = create(args.roaster) if args.roaster is not None else None
-    description, score, roast = OutfitRoaster(roaster=roaster).run(args.image)
+    if args.verbose:
+        logging.getLogger().setLevel(logging.DEBUG)
+    description, score, roast = OutfitRoaster(
+        _selected(args.perception),
+        _selected(args.scorer),
+        _selected(args.roaster),
+    ).run(args.image)
 
     if args.json:
         document = json.dumps(
