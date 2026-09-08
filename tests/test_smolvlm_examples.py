@@ -1,12 +1,15 @@
 from pathlib import Path
 
-from rmo.data.smolvlm_examples import build_training_example
+from rmo.data.smolvlm_examples import SmolVLMExampleBuilder
 
 
 def test_build_training_example() -> None:
-    example = build_training_example(
-        image_id="MEN-Denim-id_00000080-01_7_additional",
+    builder = SmolVLMExampleBuilder(
         raw_dir=Path("data/raw"),
+    )
+
+    example = builder.build(
+        "MEN-Denim-id_00000080-01_7_additional"
     )
 
     assert example["image_id"] == "MEN-Denim-id_00000080-01_7_additional"
