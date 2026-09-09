@@ -171,6 +171,67 @@ def _category(
     return category if _normalise(category) else slot.value
 
 
+def _structured_garment(
+    slot: GarmentSlot,
+    body: str,
+    tables: dict[str, dict[str, Enum]],
+) -> Garment | None:
+    """Parse the keyed fine-tuning format, returning ``None`` for legacy prose.
+
+    A structured record has one optional bare category field followed by explicit
+    ``name=value`` fields separated by pipes.  Attribute names select their own
+    enum table, so overlapping values such as ``na`` and ``other`` are never
+    assigned to the wrong attribute.
+    """
+    parts = [part.strip(" .\t") for part in body.split("|") if part.strip(" .\t")]
+    if not parts or not any("=" in part for part in parts):
+        return None
+
+    category: str | None = None
+    values: dict[str, Enum] = {}
+    shape = _SHAPE_ATTRIBUTES.get(slot, ())
+    applicable = _UNIVERSAL_ATTRIBUTES + shape
+
+    for index, part in enumerate(parts):
+        if "=" not in part:
+            if index == 0:
+                category = part[:_MAX_CATEGORY]
+                continue
+            return None
+        raw_name, raw_value = part.split("=", 1)
+        name = _normalise(raw_name).replace(" ", "_")
+        if name not in applicable:
+            continue
+        resolved = _resolve(_normalise(raw_value), tables[name])
+        if resolved is not None:
+            values[name] = resolved
+
+    for name, enum_type in _ATTRIBUTES:
+        if name in shape and name not in values:
+            values[name] = enum_type("na")
+
+    named = category if category and _normalise(category) else slot.value
+    return Garment(slot=slot, category=named, **values)
+
+
+def _structured_garments(
+    text: str, tables: dict[str, dict[str, Enum]]
+) -> list[Garment]:
+    """Return garments from keyed records, or an empty list when none are present."""
+    garments: list[Garment] = []
+    seen: set[tuple[GarmentSlot, str]] = set()
+    for slot, body, _ in _slot_records(text, tables["slot"]):
+        garment = _structured_garment(slot, body, tables)
+        if garment is None:
+            continue
+        key = (slot, _normalise(garment.category))
+        if key in seen:
+            continue
+        seen.add(key)
+        garments.append(garment)
+    return garments
+
+
 def _garment(
     slot: GarmentSlot,
     body: str,
@@ -218,17 +279,17 @@ def parse_description(
     text = text.encode("utf-8", "replace").decode("utf-8")
     tables = _lookups(config_path)
 
-    records = _slot_records(text, tables["slot"]) or _prose_records(text, tables["slot"])
-
-    garments: list[Garment] = []
-    seen: set[tuple[GarmentSlot, str]] = set()
-    for slot, body, category in records:
-        garment = _garment(slot, body, tables, category)
-        key = (slot, _normalise(garment.category))
-        if key in seen:
-            continue
-        seen.add(key)
-        garments.append(garment)
+    garments = _structured_garments(text, tables)
+    if not garments:
+        records = _slot_records(text, tables["slot"]) or _prose_records(text, tables["slot"])
+        seen: set[tuple[GarmentSlot, str]] = set()
+        for slot, body, category in records:
+            garment = _garment(slot, body, tables, category)
+            key = (slot, _normalise(garment.category))
+            if key in seen:
+                continue
+            seen.add(key)
+            garments.append(garment)
 
     if not garments:
         log.debug("no garments parsed from %d characters", len(text))

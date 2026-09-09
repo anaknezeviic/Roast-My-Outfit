@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 
 import torch
@@ -7,123 +6,15 @@ from peft import LoraConfig
 from transformers import AutoProcessor, Idefics3ForConditionalGeneration
 from trl import SFTConfig, SFTTrainer
 
-from rmo.data.descriptions import load_outfit_table
-from rmo.splits import load_split
+from rmo.data.smolvlm_examples import iter_training_examples
 
 
 MODEL_ID = "HuggingFaceTB/SmolVLM-500M-Instruct"
-RAW_DIR = Path("data/raw")
 OUTPUT_DIR = Path("models/smolvlm-rmo-v1")
-PROMPT = (
-    "Describe every visible garment. "
-    "For each garment state its slot, pattern, fabric, "
-    "sleeve length, garment length and neckline when applicable."
-)
-
-
-def make_answer(row) -> str:
-    lines = []
-
-    if row["upper_fabric"] != "na" or row["upper_pattern"] != "na":
-        values = [
-            row["upper_fabric"],
-            row["upper_pattern"],
-        ]
-
-        if row["sleeve_length"] != "na":
-            values.append(row["sleeve_length"])
-
-        if row["neckline"] != "na":
-            values.append(row["neckline"])
-
-        lines.append(f"upper: {', '.join(values)}")
-
-    if row["lower_fabric"] != "na" or row["lower_pattern"] != "na":
-        values = [
-            row["lower_fabric"],
-            row["lower_pattern"],
-        ]
-
-        if row["lower_length"] != "na":
-            values.append(row["lower_length"])
-
-        lines.append(f"lower: {', '.join(values)}")
-
-    if row["outer_fabric"] != "na" or row["outer_pattern"] != "na":
-        values = [
-            value
-            for value in (
-                row["outer_fabric"],
-                row["outer_pattern"],
-            )
-            if value != "na"
-        ]
-
-        lines.append(f"outer: {', '.join(values)}")
-
-    return "\n".join(lines)
-
 
 def make_dataset(split_name: str) -> Dataset:
-    table = load_outfit_table()
-    image_ids = sorted(load_split(split_name))
-
-    image_paths = []
-    prompts = []
-    completions = []
-
-    for image_id in image_ids:
-        row = table.loc[image_id]
-
-        if not row["has_shape"]:
-            continue
-
-        image_path = RAW_DIR / "images" / f"{image_id}.jpg"
-
-        if not image_path.exists():
-            continue
-
-        answer = make_answer(row)
-
-        if not answer:
-            continue
-
-        image_paths.append(str(image_path))
-
-        prompts.append(
-            [
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "image"},
-                        {"type": "text", "text": PROMPT},
-                    ],
-                }
-            ]
-        )
-
-        completions.append(
-            [
-                {
-                    "role": "assistant",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": answer,
-                        }
-                    ],
-                }
-            ]
-        )
-
-    dataset = Dataset.from_dict(
-        {
-            "image": image_paths,
-            "prompt": prompts,
-            "completion": completions,
-        }
-    )
-
+    records = [example.as_hf_record() for example in iter_training_examples(split_name)]
+    dataset = Dataset.from_list(records)
     return dataset.cast_column("image", Image())
 
 train_dataset = make_dataset("train")

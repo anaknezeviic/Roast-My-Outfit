@@ -15,6 +15,7 @@ __all__ = [
     "extract_palette",
     "mean_lab",
     "nearest_color_name",
+    "quantize_color_name",
     "reference_lab",
 ]
 
@@ -81,12 +82,140 @@ _REFERENCE_NAMES: tuple[ColorName, ...] = tuple(_REFERENCE_RGB)
 _REFERENCE_LAB = _srgb_to_lab(np.array([_REFERENCE_RGB[name] for name in _REFERENCE_NAMES]))
 
 
+# Garment-photo colour naming deliberately separates *how chromatic* a LAB
+# centroid is from *which hue* it has.  A single nearest-reference CIE76
+# search tends to collapse muted real-world colours onto gray/beige/black
+# because the chromatic reference swatches are maximally saturated.
+#
+# These thresholds were chosen conservatively from the train-only colour
+# audit: black assignments had p95 C* ~= 15, the beige reference has
+# C* ~= 13, while visibly chromatic false-neutral examples started above
+# roughly C*=20-25.  They are intentionally coarse vocabulary boundaries,
+# not claims about universal colour perception.
+_NAME_ACHROMATIC_CHROMA = 18.0
+_NAME_BLACK_MAX_LIGHTNESS = 20.0
+_NAME_WHITE_MIN_LIGHTNESS = 90.0
+_NAME_BEIGE_MIN_LIGHTNESS = 70.0
+_NAME_BEIGE_MAX_CHROMA = 28.0
+_NAME_BROWN_MAX_LIGHTNESS = 50.0
+_NAME_BROWN_MAX_CHROMA = 75.0
+_NAME_NAVY_MAX_LIGHTNESS = 30.0
+_NAME_NAVY_MAX_CHROMA = 95.0
+
+_HUE_NAMES: tuple[ColorName, ...] = (
+    ColorName.red,
+    ColorName.orange,
+    ColorName.yellow,
+    ColorName.chartreuse,
+    ColorName.green,
+    ColorName.spring_green,
+    ColorName.cyan,
+    ColorName.azure,
+    ColorName.blue,
+    ColorName.violet,
+    ColorName.magenta,
+    ColorName.rose,
+)
+
+
 def nearest_color_name(lab: tuple[float, float, float]) -> ColorName:
-    """Return the reference colour with the smallest CIE76 distance to ``lab``."""
+    """Return the reference colour with the smallest CIE76 distance to ``lab``.
+
+    This geometric helper is retained for diagnostics and compatibility.
+    Garment palette entries use :func:`quantize_color_name`, whose neutral vs
+    chromatic decision is more suitable for muted colours in photographs.
+    """
     point = np.asarray(lab, dtype=np.float64)
     if not np.all(np.isfinite(point)):
         return ColorName.unknown
     return _REFERENCE_NAMES[int(np.argmin(np.linalg.norm(_REFERENCE_LAB - point, axis=1)))]
+
+
+def _lab_chroma(lab: tuple[float, float, float]) -> float:
+    return float(np.hypot(float(lab[1]), float(lab[2])))
+
+
+def _lab_hue_degrees(lab: tuple[float, float, float]) -> float:
+    return float(np.degrees(np.arctan2(float(lab[2]), float(lab[1]))) % 360.0)
+
+
+def _angular_distance(first: float, second: float) -> float:
+    delta = abs(first - second) % 360.0
+    return min(delta, 360.0 - delta)
+
+
+def _reference_hue(name: ColorName) -> float:
+    row = _REFERENCE_LAB[_REFERENCE_NAMES.index(name)]
+    return _lab_hue_degrees((float(row[0]), float(row[1]), float(row[2])))
+
+
+_REFERENCE_HUES: dict[ColorName, float] = {name: _reference_hue(name) for name in _HUE_NAMES}
+
+
+def _hue_color_name(lab: tuple[float, float, float]) -> ColorName:
+    hue = _lab_hue_degrees(lab)
+    return min(
+        _HUE_NAMES,
+        key=lambda name: (_angular_distance(hue, _REFERENCE_HUES[name]), name.value),
+    )
+
+
+def _achromatic_name(lightness: float) -> ColorName:
+    if lightness <= _NAME_BLACK_MAX_LIGHTNESS:
+        return ColorName.black
+    if lightness >= _NAME_WHITE_MIN_LIGHTNESS:
+        return ColorName.white
+    return ColorName.gray
+
+
+def quantize_color_name(lab: tuple[float, float, float]) -> ColorName:
+    """Map a measured LAB centroid onto RMO's coarse garment-colour vocabulary.
+
+    The classifier first distinguishes low-chroma neutrals from chromatic
+    colours.  Chromatic colours are named by LAB hue angle rather than by full
+    CIE76 distance, so light or muted blue does not become gray merely because
+    the reference blue swatch is darker and much more saturated.  Beige, brown
+    and navy are handled as light/dark variants of their neighbouring hues.
+    """
+    point = np.asarray(lab, dtype=np.float64)
+    if point.shape != (3,) or not np.all(np.isfinite(point)):
+        return ColorName.unknown
+
+    value = (float(point[0]), float(point[1]), float(point[2]))
+    lightness = value[0]
+    chroma = _lab_chroma(value)
+    family = _hue_color_name(value)
+
+    # Warm, light, weakly chromatic colours are represented by beige rather
+    # than white/gray.  Requiring some chroma avoids turning neutral white into
+    # beige because hue is unstable close to the neutral axis.
+    if (
+        5.0 <= chroma <= _NAME_BEIGE_MAX_CHROMA
+        and lightness >= _NAME_BEIGE_MIN_LIGHTNESS
+        and family in {ColorName.orange, ColorName.yellow}
+    ):
+        return ColorName.beige
+
+    if chroma < _NAME_ACHROMATIC_CHROMA:
+        return _achromatic_name(lightness)
+
+    # Brown and navy are useful coarse names for sufficiently dark warm/cool
+    # colours.  High-lightness members of the same hue families remain their
+    # chromatic names (orange/yellow and azure/blue/violet respectively).
+    if (
+        lightness <= _NAME_BROWN_MAX_LIGHTNESS
+        and chroma <= _NAME_BROWN_MAX_CHROMA
+        and family in {ColorName.orange, ColorName.yellow}
+    ):
+        return ColorName.brown
+    if (
+        lightness <= _NAME_NAVY_MAX_LIGHTNESS
+        and chroma <= _NAME_NAVY_MAX_CHROMA
+        and family in {ColorName.azure, ColorName.blue, ColorName.violet}
+    ):
+        return ColorName.navy
+
+    return family
 
 
 def reference_lab(name: ColorName) -> tuple[float, float, float] | None:
@@ -229,7 +358,7 @@ def extract_palette(image, mask, *, n_colors: int = 3) -> list[PaletteEntry]:
     return [
         PaletteEntry(
             lab=centroid,
-            name=nearest_color_name(centroid),
+            name=quantize_color_name(centroid),
             area_fraction=mass / retained,
             source=source,
         )

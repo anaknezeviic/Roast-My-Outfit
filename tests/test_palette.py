@@ -17,6 +17,8 @@ from rmo.scoring.palette import (
     extract_palette,
     mean_lab,
     nearest_color_name,
+    quantize_color_name,
+    reference_lab,
 )
 from rmo.schemas import ColorName
 
@@ -346,3 +348,29 @@ def test_mean_lab_rejects_a_non_integer_dtype(pixels) -> None:
     with pytest.raises(ValueError, match=r"integers in \[0, 255\]"):
         mean_lab(pixels)
 
+
+@pytest.mark.parametrize(
+    ("lab", "expected"),
+    [
+        ((68.93, -16.24, -40.91), ColorName.azure),
+        ((76.70, 5.44, 50.72), ColorName.yellow),
+        ((75.77, 25.50, 26.69), ColorName.red),
+        ((18.39, 14.58, -28.63), ColorName.navy),
+    ],
+)
+def test_quantizer_does_not_collapse_chromatic_audit_examples_to_neutrals(
+    lab: tuple[float, float, float], expected: ColorName
+) -> None:
+    assert quantize_color_name(lab) is expected
+
+
+@pytest.mark.parametrize("name", [name for name in ColorName if name is not ColorName.unknown])
+def test_quantizer_preserves_every_reference_name(name: ColorName) -> None:
+    lab = reference_lab(name)
+    assert lab is not None
+    assert quantize_color_name(lab) is name
+
+
+
+def test_quantizer_rejects_non_finite_lab() -> None:
+    assert quantize_color_name((float("nan"), 0.0, 0.0)) is ColorName.unknown

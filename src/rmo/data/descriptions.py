@@ -15,10 +15,10 @@ import pandas as pd
 
 from rmo import paths
 from rmo.config import load_perception_config
+from rmo.data.label_resolution import texture_value
 from rmo.data.preflight import photo_path, report_for_ids, require
 from rmo.imaging import load_image
 from rmo.perception.enrichment import (
-    HEAD_PROJECTION,
     SLOT_CATEGORIES,
     apply_palette,
     load_mask,
@@ -56,8 +56,13 @@ _TEXTURE_COLUMNS: dict[GarmentSlot, tuple[str, str]] = {
     GarmentSlot.lower: ("lower_fabric", "lower_pattern"),
 }
 
-_SLEEVED = HEAD_PROJECTION["sleeve_length"][1]
-_HEMMED = HEAD_PROJECTION["lower_length"][1]
+_SLEEVED = (
+    GarmentSlot.dress,
+    GarmentSlot.romper,
+    GarmentSlot.upper,
+    GarmentSlot.outer,
+)
+_HEMMED = (GarmentSlot.dress, GarmentSlot.romper, GarmentSlot.lower)
 
 _NA = "na"
 
@@ -96,15 +101,12 @@ def _slots_from_texture(row: pd.Series) -> list[GarmentSlot]:
 
 
 def _garment(slot: GarmentSlot, row: pd.Series) -> Garment:
-    """Build one garment from the texture columns that describe its slot."""
-    columns = _TEXTURE_COLUMNS.get(slot)
-    if columns is None:
-        return Garment(slot=slot, category=SLOT_CATEGORIES[slot])
+    """Build one garment using the canonical regional-label resolution rules."""
     return Garment(
         slot=slot,
         category=SLOT_CATEGORIES[slot],
-        fabric=Fabric(row[columns[0]]),
-        pattern=Pattern(row[columns[1]]),
+        fabric=Fabric(texture_value(row, slot, "fabric")),
+        pattern=Pattern(texture_value(row, slot, "pattern")),
     )
 
 

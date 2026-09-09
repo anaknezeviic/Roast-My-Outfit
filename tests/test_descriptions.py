@@ -238,6 +238,72 @@ def test_load_outfit_table_indexes_by_image_id(tmp_path) -> None:
     assert frame.loc["a", "image_id"] == "a"
 
 
+def test_dress_resolves_regional_texture_and_receives_all_shape_fields(
+    tmp_path, monkeypatch
+) -> None:
+    monkeypatch.setenv("RMO_DATA_ROOT", str(tmp_path))
+    stage_photo(tmp_path, two_band_pixels())
+    stage_mask(tmp_path, np.full((10, 10), 4, dtype=np.uint8))
+    dress = describe_image(
+        IMAGE_ID,
+        row(
+            upper_fabric="chiffon",
+            lower_fabric="chiffon",
+            upper_pattern="floral",
+            lower_pattern="floral",
+            has_shape=True,
+            sleeve_length="long",
+            neckline="v_shape",
+            lower_length="three_quarter",
+        ),
+    ).garments[0]
+    assert dress.slot is GarmentSlot.dress
+    assert dress.fabric is Fabric.chiffon
+    assert dress.pattern is Pattern.floral
+    assert dress.sleeve_length is SleeveLength.long
+    assert dress.neckline is Neckline.v_shape
+    assert dress.length is LowerLength.three_quarter
+
+
+def test_one_piece_one_sided_texture_keeps_the_visible_annotation(
+    tmp_path, monkeypatch
+) -> None:
+    monkeypatch.setenv("RMO_DATA_ROOT", str(tmp_path))
+    stage_photo(tmp_path, two_band_pixels())
+    stage_mask(tmp_path, np.full((10, 10), 21, dtype=np.uint8))
+    romper = describe_image(
+        IMAGE_ID,
+        row(
+            upper_fabric="cotton",
+            lower_fabric="na",
+            upper_pattern="na",
+            lower_pattern="striped",
+        ),
+    ).garments[0]
+    assert romper.slot is GarmentSlot.romper
+    assert romper.fabric is Fabric.cotton
+    assert romper.pattern is Pattern.striped
+
+
+def test_one_piece_texture_conflict_is_not_resolved_by_guessing(
+    tmp_path, monkeypatch
+) -> None:
+    monkeypatch.setenv("RMO_DATA_ROOT", str(tmp_path))
+    stage_photo(tmp_path, two_band_pixels())
+    stage_mask(tmp_path, np.full((10, 10), 4, dtype=np.uint8))
+    dress = describe_image(
+        IMAGE_ID,
+        row(
+            upper_fabric="cotton",
+            lower_fabric="denim",
+            upper_pattern="floral",
+            lower_pattern="striped",
+        ),
+    ).garments[0]
+    assert dress.fabric is Fabric.na
+    assert dress.pattern is Pattern.na
+
+
 def _write_split(root: Path, name: str, image_ids: list[str]) -> None:
     directory = root / "processed" / "splits"
     directory.mkdir(parents=True, exist_ok=True)
