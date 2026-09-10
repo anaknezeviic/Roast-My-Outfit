@@ -1,0 +1,432 @@
+{
+  "artifacts": {
+    "git_sha": "2e7465f8a031b29ffd40aea913f4de2909644b43",
+    "outfits_parquet": "C:\\Users\\PC\\Documents\\GitHub\\Roast-My-Outfit\\data\\processed\\outfits.parquet",
+    "outfits_parquet_sha256": "6bfbcca136ce8df5e09a2d0bcce8fa144dd27239af272fc208959233982bfa02",
+    "outfits_rows": 44096,
+    "perception_config": "C:\\Users\\PC\\Documents\\GitHub\\Roast-My-Outfit\\configs\\perception.yaml",
+    "perception_config_sha256": "56ad59ff5d6d200740e778d53c8a039b085c2b296c528408857d487160738220"
+  },
+  "coverage_errors": [],
+  "coverage_warnings": [
+    "val has derived color value(s) absent from train: violet=1"
+  ],
+  "ok": true,
+  "split_manifest": {
+    "counts": {
+      "test": 1815,
+      "train": 9071,
+      "val": 1815
+    },
+    "group_disjoint": true,
+    "manifest_path": "C:\\Users\\PC\\Documents\\GitHub\\Roast-My-Outfit\\data\\processed\\splits\\MANIFEST.json",
+    "sha256": {
+      "test.txt": "580b1f0e3195549997fef601ea8c29d6537fec8587d397de802b364b29029e64",
+      "train.txt": "1d4fde61c2dd90dd9ace762e619b772c202a0d0b2e810b8356137afbe2fa3622",
+      "val.txt": "1aa32e502079e14009e191d971a8a21322ea0815773647948a7370aba1c17ecf"
+    }
+  },
+  "splits": {
+    "train": {
+      "built": 9071,
+      "category_counts": {
+        "bag": 882,
+        "belt": 493,
+        "bottom": 6671,
+        "dress": 2048,
+        "eyewear": 370,
+        "footwear": 8977,
+        "headwear": 1236,
+        "jewelry": 7164,
+        "neckwear": 43,
+        "outerwear": 2123,
+        "romper": 518,
+        "socks": 643,
+        "top": 6483
+      },
+      "error_examples": {},
+      "errors": {},
+      "field_presence": {
+        "bag.color": 882,
+        "belt.color": 493,
+        "dress.color": 2048,
+        "dress.fabric": 1932,
+        "dress.length": 2048,
+        "dress.neckline": 2048,
+        "dress.pattern": 1851,
+        "dress.sleeve_length": 2048,
+        "eyewear.color": 370,
+        "footwear.color": 8977,
+        "headwear.color": 1236,
+        "jewelry.color": 7164,
+        "lower.color": 6671,
+        "lower.fabric": 6671,
+        "lower.length": 6419,
+        "lower.pattern": 6671,
+        "neckwear.color": 43,
+        "outer.color": 2123,
+        "outer.fabric": 2123,
+        "outer.neckline": 107,
+        "outer.pattern": 2123,
+        "outer.sleeve_length": 107,
+        "romper.color": 518,
+        "romper.fabric": 500,
+        "romper.length": 515,
+        "romper.neckline": 515,
+        "romper.pattern": 475,
+        "romper.sleeve_length": 515,
+        "socks.color": 643,
+        "upper.color": 6483,
+        "upper.fabric": 6483,
+        "upper.neckline": 6396,
+        "upper.pattern": 6483,
+        "upper.sleeve_length": 6396
+      },
+      "field_values": {
+        "color": {
+          "azure": 822,
+          "beige": 3710,
+          "black": 12526,
+          "blue": 20,
+          "brown": 832,
+          "chartreuse": 8,
+          "cyan": 119,
+          "gray": 10614,
+          "magenta": 40,
+          "navy": 427,
+          "orange": 1493,
+          "red": 1875,
+          "rose": 356,
+          "spring_green": 4,
+          "white": 4702,
+          "yellow": 103
+        },
+        "fabric": {
+          "chiffon": 1348,
+          "cotton": 10959,
+          "denim": 3553,
+          "furry": 129,
+          "knitted": 818,
+          "leather": 483,
+          "na": 380,
+          "other": 39
+        },
+        "length": {
+          "long": 4454,
+          "medium_short": 686,
+          "na": 35,
+          "three_point": 3425,
+          "three_quarter": 382
+        },
+        "neckline": {
+          "lapel": 651,
+          "na": 1314,
+          "round": 4774,
+          "square": 77,
+          "standing": 221,
+          "suspenders": 1169,
+          "v_shape": 860
+        },
+        "pattern": {
+          "color_block": 225,
+          "floral": 475,
+          "graphic": 3197,
+          "lattice": 362,
+          "na": 375,
+          "other": 509,
+          "pure_color": 11839,
+          "striped": 621
+        },
+        "sleeve_length": {
+          "long": 2902,
+          "medium": 513,
+          "na": 17,
+          "not_long": 5,
+          "short": 1768,
+          "sleeveless": 3861
+        }
+      },
+      "garments_per_image": {
+        "max": 8,
+        "median": 4,
+        "min": 1,
+        "p95": 6,
+        "p99": 7
+      },
+      "longest_targets": [
+        {
+          "characters": 406,
+          "image_id": "WOMEN-Tees_Tanks-id_00002327-01_7_additional"
+        },
+        {
+          "characters": 398,
+          "image_id": "WOMEN-Shorts-id_00004797-02_4_full"
+        },
+        {
+          "characters": 398,
+          "image_id": "WOMEN-Jackets_Coats-id_00004306-01_1_front"
+        },
+        {
+          "characters": 397,
+          "image_id": "WOMEN-Skirts-id_00005607-04_1_front"
+        },
+        {
+          "characters": 396,
+          "image_id": "WOMEN-Jackets_Coats-id_00001461-02_7_additional"
+        },
+        {
+          "characters": 396,
+          "image_id": "WOMEN-Blouses_Shirts-id_00006047-01_7_additional"
+        },
+        {
+          "characters": 395,
+          "image_id": "WOMEN-Skirts-id_00005607-03_1_front"
+        },
+        {
+          "characters": 393,
+          "image_id": "WOMEN-Cardigans-id_00006470-04_4_full"
+        },
+        {
+          "characters": 393,
+          "image_id": "WOMEN-Cardigans-id_00006470-03_4_full"
+        },
+        {
+          "characters": 392,
+          "image_id": "WOMEN-Sweaters-id_00005205-02_1_front"
+        }
+      ],
+      "ok": true,
+      "requested": 9071,
+      "slot_counts": {
+        "bag": 882,
+        "belt": 493,
+        "dress": 2048,
+        "eyewear": 370,
+        "footwear": 8977,
+        "headwear": 1236,
+        "jewelry": 7164,
+        "lower": 6671,
+        "neckwear": 43,
+        "outer": 2123,
+        "romper": 518,
+        "socks": 643,
+        "upper": 6483
+      },
+      "split": "train",
+      "target_characters": {
+        "max": 406,
+        "median": 247,
+        "min": 57,
+        "p95": 332,
+        "p99": 362
+      },
+      "target_lines": {
+        "max": 8,
+        "median": 4,
+        "min": 1,
+        "p95": 6,
+        "p99": 7
+      }
+    },
+    "val": {
+      "built": 1815,
+      "category_counts": {
+        "bag": 164,
+        "belt": 98,
+        "bottom": 1324,
+        "dress": 417,
+        "eyewear": 80,
+        "footwear": 1798,
+        "headwear": 286,
+        "jewelry": 1411,
+        "neckwear": 7,
+        "outerwear": 428,
+        "romper": 104,
+        "socks": 127,
+        "top": 1282
+      },
+      "error_examples": {},
+      "errors": {},
+      "field_presence": {
+        "bag.color": 164,
+        "belt.color": 98,
+        "dress.color": 417,
+        "dress.fabric": 399,
+        "dress.length": 417,
+        "dress.neckline": 417,
+        "dress.pattern": 398,
+        "dress.sleeve_length": 417,
+        "eyewear.color": 80,
+        "footwear.color": 1798,
+        "headwear.color": 286,
+        "jewelry.color": 1411,
+        "lower.color": 1324,
+        "lower.fabric": 1324,
+        "lower.length": 1280,
+        "lower.pattern": 1324,
+        "neckwear.color": 7,
+        "outer.color": 428,
+        "outer.fabric": 428,
+        "outer.neckline": 31,
+        "outer.pattern": 428,
+        "outer.sleeve_length": 31,
+        "romper.color": 104,
+        "romper.fabric": 93,
+        "romper.length": 104,
+        "romper.neckline": 104,
+        "romper.pattern": 96,
+        "romper.sleeve_length": 104,
+        "socks.color": 127,
+        "upper.color": 1282,
+        "upper.fabric": 1282,
+        "upper.neckline": 1263,
+        "upper.pattern": 1282,
+        "upper.sleeve_length": 1263
+      },
+      "field_values": {
+        "color": {
+          "azure": 179,
+          "beige": 722,
+          "black": 2620,
+          "blue": 3,
+          "brown": 167,
+          "cyan": 21,
+          "gray": 2044,
+          "magenta": 9,
+          "navy": 69,
+          "orange": 294,
+          "red": 379,
+          "rose": 59,
+          "spring_green": 2,
+          "violet": 1,
+          "white": 931,
+          "yellow": 26
+        },
+        "fabric": {
+          "chiffon": 264,
+          "cotton": 2183,
+          "denim": 696,
+          "furry": 23,
+          "knitted": 143,
+          "leather": 120,
+          "na": 92,
+          "other": 5
+        },
+        "length": {
+          "long": 945,
+          "medium_short": 158,
+          "na": 13,
+          "three_point": 609,
+          "three_quarter": 76
+        },
+        "neckline": {
+          "lapel": 152,
+          "na": 257,
+          "round": 974,
+          "square": 19,
+          "standing": 42,
+          "suspenders": 227,
+          "v_shape": 144
+        },
+        "pattern": {
+          "color_block": 60,
+          "floral": 109,
+          "graphic": 607,
+          "lattice": 56,
+          "na": 91,
+          "other": 129,
+          "pure_color": 2347,
+          "striped": 129
+        },
+        "sleeve_length": {
+          "long": 641,
+          "medium": 130,
+          "na": 3,
+          "short": 339,
+          "sleeveless": 702
+        }
+      },
+      "garments_per_image": {
+        "max": 9,
+        "median": 4,
+        "min": 1,
+        "p95": 6,
+        "p99": 7
+      },
+      "longest_targets": [
+        {
+          "characters": 421,
+          "image_id": "WOMEN-Sweatshirts_Hoodies-id_00001326-02_7_additional"
+        },
+        {
+          "characters": 412,
+          "image_id": "WOMEN-Tees_Tanks-id_00002122-01_7_additional"
+        },
+        {
+          "characters": 408,
+          "image_id": "WOMEN-Tees_Tanks-id_00002957-01_7_additional"
+        },
+        {
+          "characters": 395,
+          "image_id": "MEN-Suiting-id_00007917-01_4_full"
+        },
+        {
+          "characters": 390,
+          "image_id": "WOMEN-Tees_Tanks-id_00002957-02_7_additional"
+        },
+        {
+          "characters": 379,
+          "image_id": "WOMEN-Skirts-id_00000500-07_1_front"
+        },
+        {
+          "characters": 378,
+          "image_id": "WOMEN-Skirts-id_00000500-06_1_front"
+        },
+        {
+          "characters": 375,
+          "image_id": "WOMEN-Sweatshirts_Hoodies-id_00001326-03_7_additional"
+        },
+        {
+          "characters": 374,
+          "image_id": "WOMEN-Sweatshirts_Hoodies-id_00001326-04_7_additional"
+        },
+        {
+          "characters": 374,
+          "image_id": "WOMEN-Skirts-id_00000500-05_1_front"
+        }
+      ],
+      "ok": true,
+      "requested": 1815,
+      "slot_counts": {
+        "bag": 164,
+        "belt": 98,
+        "dress": 417,
+        "eyewear": 80,
+        "footwear": 1798,
+        "headwear": 286,
+        "jewelry": 1411,
+        "lower": 1324,
+        "neckwear": 7,
+        "outer": 428,
+        "romper": 104,
+        "socks": 127,
+        "upper": 1282
+      },
+      "split": "val",
+      "target_characters": {
+        "max": 421,
+        "median": 244,
+        "min": 101,
+        "p95": 338,
+        "p99": 369
+      },
+      "target_lines": {
+        "max": 9,
+        "median": 4,
+        "min": 1,
+        "p95": 6,
+        "p99": 7
+      }
+    }
+  }
+}

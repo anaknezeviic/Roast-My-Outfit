@@ -1,11 +1,13 @@
 prompt: |
-  Identify every visible garment and accessory and return one line per semantic
-  slot. Use this keyed format: <slot>: <category> | color=<value> |
-  pattern=<value> | fabric=<value> | sleeve_length=<value> | length=<value> |
-  neckline=<value>. Include only keys that apply to the garment and that you can
-  determine reliably. Use 'na' for an applicable attribute that is genuinely
-  unknown; do not invent a value. Do not describe the background, pose, face, or
-  body.
+  Identify every visible garment and accessory in the outfit and return one line
+  per semantic slot. Use this keyed format: slot: category | color=value |
+  pattern=value | fabric=value | sleeve_length=value | length=value |
+  neckline=value. For category, use the coarse canonical category for the
+  semantic slot rather than a detailed product subtype. For every item where
+  pattern applies, report a pattern; plain or solid items still have a pattern
+  value. Include only keys that apply to the garment and that you can determine
+  reliably. Use 'na' for an applicable attribute that is genuinely unknown; do
+  not invent a value. Do not describe the background, pose, face, or body.
 
 generation:
   max_new_tokens: 160
