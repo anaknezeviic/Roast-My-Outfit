@@ -108,6 +108,12 @@ data/processed/*
 data/processed/**/*.tmp
 
 models/*
+!models/smolvlm-rmo-v1/
+
+models/smolvlm-rmo-v1/*
+!models/smolvlm-rmo-v1/final/
+!models/smolvlm-rmo-v1/final/**
+
 !models/README.md
 logs/
 results/**/*.tmp
