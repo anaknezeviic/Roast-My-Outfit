@@ -1,0 +1,1717 @@
+{
+  "baseline": null,
+  "config_hash": "5a23d3ce",
+  "git_sha": "25982f87544b61c35f2ecce6c796e230fb9864ee",
+  "inputs": {
+    "train": "1d4fde61c2dd90dd9ace762e619b772c202a0d0b2e810b8356137afbe2fa3622",
+    "val": "1aa32e502079e14009e191d971a8a21322ea0815773647948a7370aba1c17ecf"
+  },
+  "metrics": {
+    "best_epoch": 26,
+    "class_maps": {
+      "lower_fabric": [
+        "denim",
+        "cotton",
+        "leather",
+        "furry",
+        "knitted",
+        "chiffon",
+        "other",
+        "na"
+      ],
+      "lower_length": [
+        "three_point",
+        "medium_short",
+        "three_quarter",
+        "long",
+        "na"
+      ],
+      "lower_pattern": [
+        "floral",
+        "graphic",
+        "striped",
+        "pure_color",
+        "lattice",
+        "color_block",
+        "other",
+        "na"
+      ],
+      "neckline": [
+        "v_shape",
+        "square",
+        "round",
+        "standing",
+        "lapel",
+        "suspenders",
+        "na"
+      ],
+      "outer_fabric": [
+        "denim",
+        "cotton",
+        "leather",
+        "furry",
+        "knitted",
+        "chiffon",
+        "other",
+        "na"
+      ],
+      "outer_pattern": [
+        "floral",
+        "graphic",
+        "striped",
+        "pure_color",
+        "lattice",
+        "color_block",
+        "other",
+        "na"
+      ],
+      "sleeve_length": [
+        "sleeveless",
+        "short",
+        "medium",
+        "long",
+        "not_long",
+        "na"
+      ],
+      "upper_fabric": [
+        "denim",
+        "cotton",
+        "leather",
+        "furry",
+        "knitted",
+        "chiffon",
+        "other",
+        "na"
+      ],
+      "upper_pattern": [
+        "floral",
+        "graphic",
+        "striped",
+        "pure_color",
+        "lattice",
+        "color_block",
+        "other",
+        "na"
+      ]
+    },
+    "history": [
+      {
+        "epoch": 1,
+        "train_loss": 1.679497993654675,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.5261707988980716,
+            "macro_f1": 0.27103854834877644,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.7900826446280992,
+            "macro_f1": 0.5700895506959044,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.4143250688705234,
+            "macro_f1": 0.26130723965525426,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.34655647382920113,
+            "macro_f1": 0.318033745146867,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.5333333333333333,
+            "macro_f1": 0.2558267027327306,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.5922865013774105,
+            "macro_f1": 0.21001801045939017,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.6484848484848484,
+            "macro_f1": 0.3887909283127098,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.21818181818181817,
+            "macro_f1": 0.15104356584014608,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.509090909090909,
+            "macro_f1": 0.36169667731987915,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.3097605520568509
+      },
+      {
+        "epoch": 2,
+        "train_loss": 1.1911186774571736,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.5515151515151515,
+            "macro_f1": 0.28064133307752914,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.7641873278236915,
+            "macro_f1": 0.5568052222468971,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.36418732782369145,
+            "macro_f1": 0.2814123171539174,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.39614325068870526,
+            "macro_f1": 0.3314215390458491,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.6699724517906336,
+            "macro_f1": 0.3538058001219038,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.6732782369146005,
+            "macro_f1": 0.2629987004069729,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.7162534435261708,
+            "macro_f1": 0.425899651131977,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.5041322314049587,
+            "macro_f1": 0.20460474474133594,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.4997245179063361,
+            "macro_f1": 0.3900931725455813,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.3430758311635515
+      },
+      {
+        "epoch": 3,
+        "train_loss": 0.976901286178165,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.5553719008264463,
+            "macro_f1": 0.29089996230859533,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.8639118457300275,
+            "macro_f1": 0.6212984402620936,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.590633608815427,
+            "macro_f1": 0.34672991155260535,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.521763085399449,
+            "macro_f1": 0.38659358742804356,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.7234159779614325,
+            "macro_f1": 0.40378195222311064,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.7195592286501378,
+            "macro_f1": 0.2907921025841982,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.6644628099173554,
+            "macro_f1": 0.41269081982299594,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.4446280991735537,
+            "macro_f1": 0.22491919322791476,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.4920110192837466,
+            "macro_f1": 0.4045564213565677,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.37580693230734724
+      },
+      {
+        "epoch": 4,
+        "train_loss": 0.8711122771104177,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.5140495867768595,
+            "macro_f1": 0.27992883897816584,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.8016528925619835,
+            "macro_f1": 0.5969032566122683,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.531129476584022,
+            "macro_f1": 0.35108545845118105,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.44958677685950416,
+            "macro_f1": 0.3728758105327623,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.6391184573002755,
+            "macro_f1": 0.2782773696102038,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.7355371900826446,
+            "macro_f1": 0.3431161693188936,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.7316804407713499,
+            "macro_f1": 0.4354753332162442,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.2793388429752066,
+            "macro_f1": 0.16455822904288986,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.6104683195592286,
+            "macro_f1": 0.44020959015850714,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.3624922284356795
+      },
+      {
+        "epoch": 5,
+        "train_loss": 0.7866691831085417,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.593939393939394,
+            "macro_f1": 0.3055952531323984,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.8490358126721763,
+            "macro_f1": 0.615579495350498,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.5074380165289256,
+            "macro_f1": 0.33160748394161077,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.46225895316804405,
+            "macro_f1": 0.37737161979536843,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.7223140495867768,
+            "macro_f1": 0.4251815654964362,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.7537190082644628,
+            "macro_f1": 0.34870512594421754,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.7735537190082644,
+            "macro_f1": 0.5466299700054639,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.3338842975206612,
+            "macro_f1": 0.17466841107470515,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.5046831955922865,
+            "macro_f1": 0.40087002845340025,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.3918009947993443
+      },
+      {
+        "epoch": 6,
+        "train_loss": 0.7245963712533315,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.5763085399449036,
+            "macro_f1": 0.2931161875230629,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.8787878787878788,
+            "macro_f1": 0.6384758561001337,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.5245179063360882,
+            "macro_f1": 0.3274032474754671,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.446831955922865,
+            "macro_f1": 0.37664172832170373,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.7366391184573002,
+            "macro_f1": 0.3632892984184054,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.7713498622589532,
+            "macro_f1": 0.36508179692042814,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.7013774104683196,
+            "macro_f1": 0.43091152338300215,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.4473829201101928,
+            "macro_f1": 0.21762173752975458,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.5234159779614325,
+            "macro_f1": 0.40850139243492467,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.3801158631229869
+      },
+      {
+        "epoch": 7,
+        "train_loss": 0.6748316039641699,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.6016528925619835,
+            "macro_f1": 0.30170167619136273,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.8429752066115702,
+            "macro_f1": 0.613280324788908,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.7052341597796143,
+            "macro_f1": 0.38137965389395534,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.47878787878787876,
+            "macro_f1": 0.39147850889274016,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.7002754820936639,
+            "macro_f1": 0.3557358013616374,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.7322314049586777,
+            "macro_f1": 0.3070435158006658,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.7829201101928375,
+            "macro_f1": 0.46361731693143443,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.41763085399449035,
+            "macro_f1": 0.2016443352926306,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.6528925619834711,
+            "macro_f1": 0.47381180603209583,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.3877436599094923
+      },
+      {
+        "epoch": 8,
+        "train_loss": 0.6331720517741309,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.5884297520661157,
+            "macro_f1": 0.3029781160630547,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.8771349862258954,
+            "macro_f1": 0.6463731763164412,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.6253443526170799,
+            "macro_f1": 0.3623224542598036,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.43526170798898073,
+            "macro_f1": 0.37639637505863593,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.6958677685950413,
+            "macro_f1": 0.36568976311768675,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.721763085399449,
+            "macro_f1": 0.3157757894133654,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.7757575757575758,
+            "macro_f1": 0.46569326252023363,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.5223140495867769,
+            "macro_f1": 0.20984423981182027,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.5614325068870524,
+            "macro_f1": 0.4275330382037603,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.38584513497386685
+      },
+      {
+        "epoch": 9,
+        "train_loss": 0.5921361049016317,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.6115702479338843,
+            "macro_f1": 0.30434993130215837,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.8457300275482094,
+            "macro_f1": 0.6108919956685771,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.6181818181818182,
+            "macro_f1": 0.35458674187312,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.5614325068870524,
+            "macro_f1": 0.40485583455273877,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.7730027548209366,
+            "macro_f1": 0.46614601458605776,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.7592286501377411,
+            "macro_f1": 0.3274639061301574,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.7680440771349862,
+            "macro_f1": 0.4620287458734679,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.5068870523415978,
+            "macro_f1": 0.2192887084380237,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.5983471074380166,
+            "macro_f1": 0.464608506640126,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.40158004278493636
+      },
+      {
+        "epoch": 10,
+        "train_loss": 0.5691437663303481,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.5757575757575758,
+            "macro_f1": 0.2845038603889182,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.8793388429752066,
+            "macro_f1": 0.6350304419300434,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.6837465564738292,
+            "macro_f1": 0.3922087370173081,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.5526170798898071,
+            "macro_f1": 0.41932576202579286,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.7454545454545455,
+            "macro_f1": 0.43769207771757745,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.7994490358126721,
+            "macro_f1": 0.34744296841354694,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.790633608815427,
+            "macro_f1": 0.5683173761462184,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.5482093663911846,
+            "macro_f1": 0.22695237370411916,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.4732782369146005,
+            "macro_f1": 0.38799198743371693,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.4110517316419157
+      },
+      {
+        "epoch": 11,
+        "train_loss": 0.542735244664881,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.5977961432506887,
+            "macro_f1": 0.30190368720796074,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.8732782369146006,
+            "macro_f1": 0.6250920438469164,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.6914600550964187,
+            "macro_f1": 0.35947745159128575,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.4793388429752066,
+            "macro_f1": 0.3920640597430075,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.793939393939394,
+            "macro_f1": 0.44195330248467735,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.7680440771349862,
+            "macro_f1": 0.2984917251054126,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.8121212121212121,
+            "macro_f1": 0.5671069989445732,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.5344352617079889,
+            "macro_f1": 0.22652770643159784,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.590633608815427,
+            "macro_f1": 0.46864463924487443,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.4090290682889229
+      },
+      {
+        "epoch": 12,
+        "train_loss": 0.5194432429141469,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.6236914600550965,
+            "macro_f1": 0.3080645334736503,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.8589531680440772,
+            "macro_f1": 0.6262211330264387,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.6991735537190082,
+            "macro_f1": 0.37892796194977296,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.509641873278237,
+            "macro_f1": 0.402469917564335,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.7465564738292011,
+            "macro_f1": 0.3944655659812834,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.7917355371900826,
+            "macro_f1": 0.354158670992052,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.78732782369146,
+            "macro_f1": 0.565495538500902,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.5338842975206611,
+            "macro_f1": 0.23280039467828578,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.5867768595041323,
+            "macro_f1": 0.4328659164959908,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.41060773696252345
+      },
+      {
+        "epoch": 13,
+        "train_loss": 0.5020108910070525,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.6214876033057851,
+            "macro_f1": 0.30787271906939695,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.8804407713498622,
+            "macro_f1": 0.6510983794186881,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.5884297520661157,
+            "macro_f1": 0.36418971943607764,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.5256198347107438,
+            "macro_f1": 0.4146474928255697,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.7570247933884298,
+            "macro_f1": 0.4475711462637215,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.8225895316804408,
+            "macro_f1": 0.3530785245212976,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.78732782369146,
+            "macro_f1": 0.564321550680899,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.5206611570247934,
+            "macro_f1": 0.2566877108871341,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.5608815426997246,
+            "macro_f1": 0.43581376679456957,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.42169788998859487
+      },
+      {
+        "epoch": 14,
+        "train_loss": 0.48332830684052575,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.6077134986225895,
+            "macro_f1": 0.2997325795139259,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.8887052341597796,
+            "macro_f1": 0.6470252218883615,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.6760330578512397,
+            "macro_f1": 0.40114642231839964,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.4225895316804408,
+            "macro_f1": 0.36802052541415825,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.7460055096418733,
+            "macro_f1": 0.3966154725804414,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.8044077134986226,
+            "macro_f1": 0.33708013401322123,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.7801652892561983,
+            "macro_f1": 0.5655225652336987,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.5884297520661157,
+            "macro_f1": 0.25874457135090395,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.5917355371900826,
+            "macro_f1": 0.45667586403692106,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.41450703959444796
+      },
+      {
+        "epoch": 15,
+        "train_loss": 0.46084120704068077,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.6303030303030303,
+            "macro_f1": 0.3097095907776574,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.8809917355371901,
+            "macro_f1": 0.6494716320331486,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.6738292011019283,
+            "macro_f1": 0.37100437505429856,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.4721763085399449,
+            "macro_f1": 0.3907555049868631,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.7647382920110193,
+            "macro_f1": 0.3986147425768768,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.7840220385674931,
+            "macro_f1": 0.3198884227971221,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.7955922865013774,
+            "macro_f1": 0.5709991059346462,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.4881542699724518,
+            "macro_f1": 0.2504523458745177,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.6033057851239669,
+            "macro_f1": 0.4551321423372945,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.41289198470804717
+      },
+      {
+        "epoch": 16,
+        "train_loss": 0.4464953632818328,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.6231404958677685,
+            "macro_f1": 0.31189964702165124,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.8672176308539945,
+            "macro_f1": 0.6465366300296403,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.6319559228650138,
+            "macro_f1": 0.36869020000600367,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.5393939393939394,
+            "macro_f1": 0.40717321538344226,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.7994490358126721,
+            "macro_f1": 0.4113986547412466,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.7801652892561983,
+            "macro_f1": 0.334233992443559,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.809366391184573,
+            "macro_f1": 0.552673963621641,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.5955922865013774,
+            "macro_f1": 0.2750769449069676,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.5680440771349863,
+            "macro_f1": 0.4377289412131805,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.41615690992970356
+      },
+      {
+        "epoch": 17,
+        "train_loss": 0.43285710944069755,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.6082644628099173,
+            "macro_f1": 0.30331542996668504,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.8798898071625344,
+            "macro_f1": 0.6326525544508572,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.6710743801652893,
+            "macro_f1": 0.3750864285585676,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.5074380165289256,
+            "macro_f1": 0.40699717577232136,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.7597796143250689,
+            "macro_f1": 0.4587697430183032,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.793939393939394,
+            "macro_f1": 0.33599327978924787,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.7911845730027548,
+            "macro_f1": 0.4777562547391844,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.5663911845730027,
+            "macro_f1": 0.2661024080236349,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.5834710743801653,
+            "macro_f1": 0.4604103942872984,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.41300929651178886
+      },
+      {
+        "epoch": 18,
+        "train_loss": 0.42233580764796996,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.6694214876033058,
+            "macro_f1": 0.3246985543329373,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.8804407713498622,
+            "macro_f1": 0.6354673582575178,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.7294765840220385,
+            "macro_f1": 0.3966075193550521,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.5261707988980716,
+            "macro_f1": 0.40981991995202577,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.7636363636363637,
+            "macro_f1": 0.446410575848545,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.7691460055096419,
+            "macro_f1": 0.346769391534102,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.793939393939394,
+            "macro_f1": 0.5713881920801784,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.5597796143250688,
+            "macro_f1": 0.2475302247911903,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.5107438016528926,
+            "macro_f1": 0.4177127937764319,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.42182272554755346
+      },
+      {
+        "epoch": 19,
+        "train_loss": 0.41077221433321637,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.6336088154269972,
+            "macro_f1": 0.31409377527353655,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.8710743801652893,
+            "macro_f1": 0.6483980612074756,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.7333333333333333,
+            "macro_f1": 0.3922708131428061,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.5118457300275482,
+            "macro_f1": 0.4114517086060657,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.7955922865013774,
+            "macro_f1": 0.47485470407635905,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.8027548209366391,
+            "macro_f1": 0.34616331217666774,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.8148760330578513,
+            "macro_f1": 0.5734138953383013,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.525068870523416,
+            "macro_f1": 0.22921090493825821,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.6446280991735537,
+            "macro_f1": 0.4671471622265926,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.4285560374428959
+      },
+      {
+        "epoch": 20,
+        "train_loss": 0.3981546950009134,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.6473829201101928,
+            "macro_f1": 0.31483802842237585,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.8865013774104683,
+            "macro_f1": 0.6549538579121893,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.5933884297520661,
+            "macro_f1": 0.3431022712144087,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.5140495867768595,
+            "macro_f1": 0.4064218197168906,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.7669421487603306,
+            "macro_f1": 0.46560518864240275,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.7955922865013774,
+            "macro_f1": 0.3366662657958671,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.7983471074380165,
+            "macro_f1": 0.5754592184521322,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.5234159779614325,
+            "macro_f1": 0.24379141192005122,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.6082644628099173,
+            "macro_f1": 0.46666258801308347,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.4230556277877113
+      },
+      {
+        "epoch": 21,
+        "train_loss": 0.38467594650056625,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.668870523415978,
+            "macro_f1": 0.3247494039101344,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.874931129476584,
+            "macro_f1": 0.6370524433643412,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.6628099173553719,
+            "macro_f1": 0.36941572888612184,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.4699724517906336,
+            "macro_f1": 0.4006116689483526,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.806060606060606,
+            "macro_f1": 0.5007417855503544,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.7972451790633609,
+            "macro_f1": 0.3417050430303057,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.8055096418732782,
+            "macro_f1": 0.564403615398101,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.6198347107438017,
+            "macro_f1": 0.26525241804410105,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.6132231404958678,
+            "macro_f1": 0.4598015821877712,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.4293037432577315
+      },
+      {
+        "epoch": 22,
+        "train_loss": 0.3791942422588666,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.634159779614325,
+            "macro_f1": 0.3129520047724527,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.8842975206611571,
+            "macro_f1": 0.6467389696825664,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.7371900826446282,
+            "macro_f1": 0.39686594877592113,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.5603305785123966,
+            "macro_f1": 0.4283618863275031,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.7961432506887053,
+            "macro_f1": 0.48965866133329666,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.8005509641873279,
+            "macro_f1": 0.3440262718343171,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.8049586776859504,
+            "macro_f1": 0.5746744697602911,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.5614325068870524,
+            "macro_f1": 0.25675019414909905,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.6198347107438017,
+            "macro_f1": 0.46713063536253374,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.43523989355533127
+      },
+      {
+        "epoch": 23,
+        "train_loss": 0.37359072433577645,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.6247933884297521,
+            "macro_f1": 0.3094039687063864,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.8639118457300275,
+            "macro_f1": 0.6314806572804914,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.7146005509641873,
+            "macro_f1": 0.39120558832884267,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.5366391184573003,
+            "macro_f1": 0.4167679858144533,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.7955922865013774,
+            "macro_f1": 0.49754213103642025,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.8352617079889807,
+            "macro_f1": 0.37764142492120945,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.7955922865013774,
+            "macro_f1": 0.5649992735060462,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.5393939393939394,
+            "macro_f1": 0.2695388660006639,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.6214876033057851,
+            "macro_f1": 0.4601981623972815,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.4354197842213106
+      },
+      {
+        "epoch": 24,
+        "train_loss": 0.3610663231876161,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.6209366391184573,
+            "macro_f1": 0.30471666339117853,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.8743801652892562,
+            "macro_f1": 0.6436456454913431,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.6991735537190082,
+            "macro_f1": 0.37701418414493665,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.5112947658402204,
+            "macro_f1": 0.4058667993128852,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.8033057851239669,
+            "macro_f1": 0.508342205630618,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.8236914600550964,
+            "macro_f1": 0.3553372709866167,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.8126721763085399,
+            "macro_f1": 0.5733938729463602,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.4925619834710744,
+            "macro_f1": 0.24805631196719316,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.5834710743801653,
+            "macro_f1": 0.44702302363658597,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.4292662197230797
+      },
+      {
+        "epoch": 25,
+        "train_loss": 0.3554706896344821,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.6738292011019283,
+            "macro_f1": 0.3247631296284661,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.8765840220385674,
+            "macro_f1": 0.644303268490692,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.5862258953168044,
+            "macro_f1": 0.3608220510578478,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.5575757575757576,
+            "macro_f1": 0.418449276022448,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.7834710743801653,
+            "macro_f1": 0.49793526079286515,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.8066115702479338,
+            "macro_f1": 0.3495808107732967,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.8055096418732782,
+            "macro_f1": 0.5775200324951072,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.61267217630854,
+            "macro_f1": 0.27256768269356446,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.6429752066115703,
+            "macro_f1": 0.46407164686559094,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.434445906535542
+      },
+      {
+        "epoch": 26,
+        "train_loss": 0.34854364809062743,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.6672176308539944,
+            "macro_f1": 0.32521226926115737,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.8798898071625344,
+            "macro_f1": 0.6428639330675369,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.7245179063360881,
+            "macro_f1": 0.39121697660980126,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.48705234159779615,
+            "macro_f1": 0.4003679869498716,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.7922865013774105,
+            "macro_f1": 0.5170995706837763,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.8126721763085399,
+            "macro_f1": 0.3568445772575366,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.8253443526170798,
+            "macro_f1": 0.565438781778641,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.6231404958677685,
+            "macro_f1": 0.28478936889173967,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.6198347107438017,
+            "macro_f1": 0.44671881377136585,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.43672803091904744
+      },
+      {
+        "epoch": 27,
+        "train_loss": 0.3411581466595332,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.6253443526170799,
+            "macro_f1": 0.30653009057764297,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.8881542699724518,
+            "macro_f1": 0.6583561993093286,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.6699724517906336,
+            "macro_f1": 0.3701943263318953,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.5482093663911846,
+            "macro_f1": 0.4172215554532452,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.768595041322314,
+            "macro_f1": 0.4611908465524651,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.8143250688705234,
+            "macro_f1": 0.3564637534581666,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.7878787878787878,
+            "macro_f1": 0.5673722873384894,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.5884297520661157,
+            "macro_f1": 0.28607770968720525,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.6192837465564738,
+            "macro_f1": 0.4607090516165804,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.4315684244805577
+      },
+      {
+        "epoch": 28,
+        "train_loss": 0.3392169757021798,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.6473829201101928,
+            "macro_f1": 0.3159544266852764,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.8837465564738292,
+            "macro_f1": 0.6505792347192145,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.7460055096418733,
+            "macro_f1": 0.3889881703262972,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.48484848484848486,
+            "macro_f1": 0.40035981268440596,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.7856749311294766,
+            "macro_f1": 0.4993489707162223,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.7983471074380165,
+            "macro_f1": 0.357761958824531,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.8055096418732782,
+            "macro_f1": 0.5775230863712347,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.6528925619834711,
+            "macro_f1": 0.2782902133058611,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.61267217630854,
+            "macro_f1": 0.4500733001873875,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.4354310193133812
+      },
+      {
+        "epoch": 29,
+        "train_loss": 0.3302405584189627,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.6418732782369146,
+            "macro_f1": 0.31373274406651114,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.8903581267217631,
+            "macro_f1": 0.6592277193358143,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.668870523415978,
+            "macro_f1": 0.37167290656379415,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.4534435261707989,
+            "macro_f1": 0.38146214939288997,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.7851239669421488,
+            "macro_f1": 0.47385337055758386,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.8148760330578513,
+            "macro_f1": 0.3534149494281293,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.7917355371900826,
+            "macro_f1": 0.5686249716101687,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.6209366391184573,
+            "macro_f1": 0.29210014558520203,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.5878787878787879,
+            "macro_f1": 0.4379460418777847,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.4280038887130975
+      },
+      {
+        "epoch": 30,
+        "train_loss": 0.32549189858966404,
+        "val_heads": {
+          "lower_fabric": {
+            "accuracy": 0.6661157024793388,
+            "macro_f1": 0.3215081468776373,
+            "n": 1815
+          },
+          "lower_length": {
+            "accuracy": 0.8831955922865014,
+            "macro_f1": 0.6518755042374352,
+            "n": 1815
+          },
+          "lower_pattern": {
+            "accuracy": 0.703030303030303,
+            "macro_f1": 0.38547438680585777,
+            "n": 1815
+          },
+          "neckline": {
+            "accuracy": 0.5399449035812672,
+            "macro_f1": 0.4150869082583745,
+            "n": 1815
+          },
+          "outer_fabric": {
+            "accuracy": 0.7862258953168044,
+            "macro_f1": 0.5110289191151394,
+            "n": 1815
+          },
+          "outer_pattern": {
+            "accuracy": 0.8071625344352618,
+            "macro_f1": 0.3586753288313499,
+            "n": 1815
+          },
+          "sleeve_length": {
+            "accuracy": 0.8297520661157025,
+            "macro_f1": 0.5645824623476132,
+            "n": 1815
+          },
+          "upper_fabric": {
+            "accuracy": 0.47878787878787876,
+            "macro_f1": 0.24841674431861416,
+            "n": 1815
+          },
+          "upper_pattern": {
+            "accuracy": 0.5977961432506887,
+            "macro_f1": 0.44584327401725,
+            "n": 1815
+          }
+        },
+        "val_mean_macro_f1": 0.4336101860899191
+      }
+    ],
+    "mean_macro_f1": 0.43672803091904744,
+    "per_head": {
+      "lower_fabric": {
+        "accuracy": 0.6672176308539944,
+        "macro_f1": 0.32521226926115737,
+        "n": 1815
+      },
+      "lower_length": {
+        "accuracy": 0.8798898071625344,
+        "macro_f1": 0.6428639330675369,
+        "n": 1815
+      },
+      "lower_pattern": {
+        "accuracy": 0.7245179063360881,
+        "macro_f1": 0.39121697660980126,
+        "n": 1815
+      },
+      "neckline": {
+        "accuracy": 0.48705234159779615,
+        "macro_f1": 0.4003679869498716,
+        "n": 1815
+      },
+      "outer_fabric": {
+        "accuracy": 0.7922865013774105,
+        "macro_f1": 0.5170995706837763,
+        "n": 1815
+      },
+      "outer_pattern": {
+        "accuracy": 0.8126721763085399,
+        "macro_f1": 0.3568445772575366,
+        "n": 1815
+      },
+      "sleeve_length": {
+        "accuracy": 0.8253443526170798,
+        "macro_f1": 0.565438781778641,
+        "n": 1815
+      },
+      "upper_fabric": {
+        "accuracy": 0.6231404958677685,
+        "macro_f1": 0.28478936889173967,
+        "n": 1815
+      },
+      "upper_pattern": {
+        "accuracy": 0.6198347107438017,
+        "macro_f1": 0.44671881377136585,
+        "n": 1815
+      }
+    },
+    "untrained_heads": []
+  },
+  "model": "resnet50",
+  "n_items": 1815,
+  "provenance": "predicted",
+  "schema_version": "1.0.0",
+  "seed": 20260101,
+  "split": "val",
+  "stage": "perception",
+  "timestamp": "2026-09-10T22:23:21Z"
+}

@@ -114,6 +114,9 @@ models/smolvlm-rmo-v1/*
 !models/smolvlm-rmo-v1/final/
 !models/smolvlm-rmo-v1/final/**
 
+!models/perception_cnn/
+!models/perception_cnn/cnn_multihead_v1.pt
+
 !models/README.md
 logs/
 results/**/*.tmp
