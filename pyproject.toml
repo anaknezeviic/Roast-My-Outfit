@@ -31,6 +31,7 @@ vlm = [
     "torch>=2.2",
     "torchvision>=0.17",
     "transformers>=4.56",
+    "peft>=0.17",
 ]
 cnn = [
     "rmo[vlm]",

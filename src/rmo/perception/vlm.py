@@ -22,7 +22,10 @@ __all__ = ["DEFAULT_MODEL_ID", "REGISTRY_NAME", "SmolVLMPerception"]
 
 DEFAULT_MODEL_ID = "HuggingFaceTB/SmolVLM-500M-Instruct"
 
+DEFAULT_ADAPTER_PATH = Path("models/smolvlm-rmo-v1/final")
+
 REGISTRY_NAME = "smolvlm"
+FINETUNED_REGISTRY_NAME = "smolvlm_rmo_v1"
 
 
 class SmolVLMPerception(PerceptionModel):
@@ -34,10 +37,25 @@ class SmolVLMPerception(PerceptionModel):
         *,
         device: str | None = None,
         config_path: Path | None = None,
+        adapter_path: str | Path | None = None,
     ) -> None:
         """Record the checkpoint and prompt without loading any weights."""
         config = load_perception_config(config_path)
-        self.name = model_id
+        self._model_id = model_id
+        self._adapter_path = (
+            Path(adapter_path)
+            if adapter_path is not None
+            else None
+        )
+
+        if self._adapter_path is not None and not self._adapter_path.is_absolute():
+            self._adapter_path = paths.repo_root() / self._adapter_path
+
+        self.name = (
+            f"{self._adapter_path.parent.name}-{self._adapter_path.name}"
+            if self._adapter_path is not None
+            else model_id
+        )
         self._config_path = config_path
         self._prompt: str = config["prompt"]
         self._generation: dict[str, Any] = dict(config["generation"])
@@ -61,10 +79,31 @@ class SmolVLMPerception(PerceptionModel):
 
         device = self._requested_device or ("cuda" if torch.cuda.is_available() else "cpu")
         dtype = torch.float16 if device.startswith("cuda") else torch.float32
-        self._processor = AutoProcessor.from_pretrained(self.name)
-        self._model = AutoModelForImageTextToText.from_pretrained(self.name, dtype=dtype).to(
-            device
-        )
+        self._processor = AutoProcessor.from_pretrained(self._model_id)
+        model = AutoModelForImageTextToText.from_pretrained(
+            self._model_id,
+            dtype=dtype,
+        ).to(device)
+
+        if self._adapter_path is not None:
+            if not self._adapter_path.is_dir():
+                raise FileNotFoundError(
+                    f"SmolVLM adapter directory does not exist: {self._adapter_path}"
+                )
+
+            try:
+                from peft import PeftModel
+            except ImportError as exc:
+                raise ImportError(
+                    "Loading a fine-tuned SmolVLM adapter needs peft."
+                ) from exc
+
+            model = PeftModel.from_pretrained(
+                model,
+                str(self._adapter_path),
+            )
+
+        self._model = model
         self._model.eval()
         self._device = device
         log.info("loaded %s on %s as %s", self.name, device, dtype)
