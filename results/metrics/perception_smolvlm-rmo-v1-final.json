@@ -1,0 +1,1315 @@
+{
+  "baseline": null,
+  "config_hash": "647b6422",
+  "git_sha": "47d10030942fbf5d8d513237561c78d77f54de2f",
+  "inputs": {
+    "split": "580b1f0e3195549997fef601ea8c29d6537fec8587d397de802b364b29029e64"
+  },
+  "metrics": {
+    "fields": {
+      "color": {
+        "accuracy": 0.7419354838709677,
+        "confusion": [
+          {
+            "actual": "azure",
+            "count": 127,
+            "predicted": "azure"
+          },
+          {
+            "actual": "azure",
+            "count": 1,
+            "predicted": "black"
+          },
+          {
+            "actual": "azure",
+            "count": 2,
+            "predicted": "cyan"
+          },
+          {
+            "actual": "azure",
+            "count": 19,
+            "predicted": "gray"
+          },
+          {
+            "actual": "azure",
+            "count": 2,
+            "predicted": "na"
+          },
+          {
+            "actual": "azure",
+            "count": 8,
+            "predicted": "navy"
+          },
+          {
+            "actual": "beige",
+            "count": 548,
+            "predicted": "beige"
+          },
+          {
+            "actual": "beige",
+            "count": 6,
+            "predicted": "black"
+          },
+          {
+            "actual": "beige",
+            "count": 3,
+            "predicted": "brown"
+          },
+          {
+            "actual": "beige",
+            "count": 51,
+            "predicted": "gray"
+          },
+          {
+            "actual": "beige",
+            "count": 17,
+            "predicted": "na"
+          },
+          {
+            "actual": "beige",
+            "count": 90,
+            "predicted": "orange"
+          },
+          {
+            "actual": "beige",
+            "count": 11,
+            "predicted": "red"
+          },
+          {
+            "actual": "beige",
+            "count": 14,
+            "predicted": "white"
+          },
+          {
+            "actual": "black",
+            "count": 2,
+            "predicted": "azure"
+          },
+          {
+            "actual": "black",
+            "count": 41,
+            "predicted": "beige"
+          },
+          {
+            "actual": "black",
+            "count": 2138,
+            "predicted": "black"
+          },
+          {
+            "actual": "black",
+            "count": 10,
+            "predicted": "brown"
+          },
+          {
+            "actual": "black",
+            "count": 1,
+            "predicted": "cyan"
+          },
+          {
+            "actual": "black",
+            "count": 215,
+            "predicted": "gray"
+          },
+          {
+            "actual": "black",
+            "count": 56,
+            "predicted": "na"
+          },
+          {
+            "actual": "black",
+            "count": 8,
+            "predicted": "navy"
+          },
+          {
+            "actual": "black",
+            "count": 7,
+            "predicted": "orange"
+          },
+          {
+            "actual": "black",
+            "count": 22,
+            "predicted": "red"
+          },
+          {
+            "actual": "black",
+            "count": 6,
+            "predicted": "rose"
+          },
+          {
+            "actual": "black",
+            "count": 12,
+            "predicted": "white"
+          },
+          {
+            "actual": "blue",
+            "count": 1,
+            "predicted": "azure"
+          },
+          {
+            "actual": "blue",
+            "count": 1,
+            "predicted": "na"
+          },
+          {
+            "actual": "brown",
+            "count": 16,
+            "predicted": "beige"
+          },
+          {
+            "actual": "brown",
+            "count": 7,
+            "predicted": "black"
+          },
+          {
+            "actual": "brown",
+            "count": 71,
+            "predicted": "brown"
+          },
+          {
+            "actual": "brown",
+            "count": 7,
+            "predicted": "gray"
+          },
+          {
+            "actual": "brown",
+            "count": 2,
+            "predicted": "na"
+          },
+          {
+            "actual": "brown",
+            "count": 42,
+            "predicted": "orange"
+          },
+          {
+            "actual": "brown",
+            "count": 21,
+            "predicted": "red"
+          },
+          {
+            "actual": "cyan",
+            "count": 4,
+            "predicted": "azure"
+          },
+          {
+            "actual": "cyan",
+            "count": 18,
+            "predicted": "cyan"
+          },
+          {
+            "actual": "cyan",
+            "count": 2,
+            "predicted": "gray"
+          },
+          {
+            "actual": "cyan",
+            "count": 1,
+            "predicted": "na"
+          },
+          {
+            "actual": "gray",
+            "count": 36,
+            "predicted": "azure"
+          },
+          {
+            "actual": "gray",
+            "count": 272,
+            "predicted": "beige"
+          },
+          {
+            "actual": "gray",
+            "count": 186,
+            "predicted": "black"
+          },
+          {
+            "actual": "gray",
+            "count": 7,
+            "predicted": "brown"
+          },
+          {
+            "actual": "gray",
+            "count": 1489,
+            "predicted": "gray"
+          },
+          {
+            "actual": "gray",
+            "count": 45,
+            "predicted": "na"
+          },
+          {
+            "actual": "gray",
+            "count": 8,
+            "predicted": "navy"
+          },
+          {
+            "actual": "gray",
+            "count": 23,
+            "predicted": "orange"
+          },
+          {
+            "actual": "gray",
+            "count": 22,
+            "predicted": "red"
+          },
+          {
+            "actual": "gray",
+            "count": 5,
+            "predicted": "rose"
+          },
+          {
+            "actual": "gray",
+            "count": 111,
+            "predicted": "white"
+          },
+          {
+            "actual": "magenta",
+            "count": 1,
+            "predicted": "rose"
+          },
+          {
+            "actual": "navy",
+            "count": 18,
+            "predicted": "azure"
+          },
+          {
+            "actual": "navy",
+            "count": 7,
+            "predicted": "black"
+          },
+          {
+            "actual": "navy",
+            "count": 5,
+            "predicted": "gray"
+          },
+          {
+            "actual": "navy",
+            "count": 3,
+            "predicted": "na"
+          },
+          {
+            "actual": "navy",
+            "count": 42,
+            "predicted": "navy"
+          },
+          {
+            "actual": "navy",
+            "count": 1,
+            "predicted": "white"
+          },
+          {
+            "actual": "orange",
+            "count": 111,
+            "predicted": "beige"
+          },
+          {
+            "actual": "orange",
+            "count": 2,
+            "predicted": "black"
+          },
+          {
+            "actual": "orange",
+            "count": 19,
+            "predicted": "brown"
+          },
+          {
+            "actual": "orange",
+            "count": 3,
+            "predicted": "gray"
+          },
+          {
+            "actual": "orange",
+            "count": 124,
+            "predicted": "orange"
+          },
+          {
+            "actual": "orange",
+            "count": 19,
+            "predicted": "red"
+          },
+          {
+            "actual": "red",
+            "count": 38,
+            "predicted": "beige"
+          },
+          {
+            "actual": "red",
+            "count": 12,
+            "predicted": "black"
+          },
+          {
+            "actual": "red",
+            "count": 15,
+            "predicted": "brown"
+          },
+          {
+            "actual": "red",
+            "count": 10,
+            "predicted": "gray"
+          },
+          {
+            "actual": "red",
+            "count": 17,
+            "predicted": "na"
+          },
+          {
+            "actual": "red",
+            "count": 18,
+            "predicted": "orange"
+          },
+          {
+            "actual": "red",
+            "count": 226,
+            "predicted": "red"
+          },
+          {
+            "actual": "red",
+            "count": 21,
+            "predicted": "rose"
+          },
+          {
+            "actual": "red",
+            "count": 2,
+            "predicted": "white"
+          },
+          {
+            "actual": "rose",
+            "count": 1,
+            "predicted": "black"
+          },
+          {
+            "actual": "rose",
+            "count": 1,
+            "predicted": "gray"
+          },
+          {
+            "actual": "rose",
+            "count": 2,
+            "predicted": "na"
+          },
+          {
+            "actual": "rose",
+            "count": 1,
+            "predicted": "navy"
+          },
+          {
+            "actual": "rose",
+            "count": 8,
+            "predicted": "red"
+          },
+          {
+            "actual": "rose",
+            "count": 48,
+            "predicted": "rose"
+          },
+          {
+            "actual": "rose",
+            "count": 1,
+            "predicted": "white"
+          },
+          {
+            "actual": "spring_green",
+            "count": 2,
+            "predicted": "cyan"
+          },
+          {
+            "actual": "spring_green",
+            "count": 1,
+            "predicted": "green"
+          },
+          {
+            "actual": "spring_green",
+            "count": 1,
+            "predicted": "orange"
+          },
+          {
+            "actual": "violet",
+            "count": 2,
+            "predicted": "magenta"
+          },
+          {
+            "actual": "white",
+            "count": 65,
+            "predicted": "beige"
+          },
+          {
+            "actual": "white",
+            "count": 5,
+            "predicted": "black"
+          },
+          {
+            "actual": "white",
+            "count": 88,
+            "predicted": "gray"
+          },
+          {
+            "actual": "white",
+            "count": 14,
+            "predicted": "na"
+          },
+          {
+            "actual": "white",
+            "count": 1,
+            "predicted": "orange"
+          },
+          {
+            "actual": "white",
+            "count": 3,
+            "predicted": "red"
+          },
+          {
+            "actual": "white",
+            "count": 772,
+            "predicted": "white"
+          },
+          {
+            "actual": "yellow",
+            "count": 1,
+            "predicted": "brown"
+          },
+          {
+            "actual": "yellow",
+            "count": 3,
+            "predicted": "gray"
+          },
+          {
+            "actual": "yellow",
+            "count": 2,
+            "predicted": "na"
+          },
+          {
+            "actual": "yellow",
+            "count": 5,
+            "predicted": "orange"
+          },
+          {
+            "actual": "yellow",
+            "count": 9,
+            "predicted": "yellow"
+          }
+        ],
+        "excluded": 0,
+        "macro_f1": 0.4418724346632158,
+        "n": 7564,
+        "reason": null
+      },
+      "fabric": {
+        "accuracy": 0.8876033057851239,
+        "confusion": [
+          {
+            "actual": "chiffon",
+            "count": 240,
+            "predicted": "chiffon"
+          },
+          {
+            "actual": "chiffon",
+            "count": 141,
+            "predicted": "cotton"
+          },
+          {
+            "actual": "chiffon",
+            "count": 1,
+            "predicted": "denim"
+          },
+          {
+            "actual": "chiffon",
+            "count": 1,
+            "predicted": "leather"
+          },
+          {
+            "actual": "chiffon",
+            "count": 5,
+            "predicted": "na"
+          },
+          {
+            "actual": "cotton",
+            "count": 120,
+            "predicted": "chiffon"
+          },
+          {
+            "actual": "cotton",
+            "count": 2295,
+            "predicted": "cotton"
+          },
+          {
+            "actual": "cotton",
+            "count": 133,
+            "predicted": "denim"
+          },
+          {
+            "actual": "cotton",
+            "count": 23,
+            "predicted": "knitted"
+          },
+          {
+            "actual": "cotton",
+            "count": 21,
+            "predicted": "leather"
+          },
+          {
+            "actual": "cotton",
+            "count": 17,
+            "predicted": "na"
+          },
+          {
+            "actual": "denim",
+            "count": 16,
+            "predicted": "cotton"
+          },
+          {
+            "actual": "denim",
+            "count": 652,
+            "predicted": "denim"
+          },
+          {
+            "actual": "denim",
+            "count": 3,
+            "predicted": "leather"
+          },
+          {
+            "actual": "furry",
+            "count": 3,
+            "predicted": "cotton"
+          },
+          {
+            "actual": "furry",
+            "count": 20,
+            "predicted": "furry"
+          },
+          {
+            "actual": "furry",
+            "count": 1,
+            "predicted": "na"
+          },
+          {
+            "actual": "knitted",
+            "count": 36,
+            "predicted": "cotton"
+          },
+          {
+            "actual": "knitted",
+            "count": 1,
+            "predicted": "denim"
+          },
+          {
+            "actual": "knitted",
+            "count": 3,
+            "predicted": "furry"
+          },
+          {
+            "actual": "knitted",
+            "count": 125,
+            "predicted": "knitted"
+          },
+          {
+            "actual": "knitted",
+            "count": 4,
+            "predicted": "na"
+          },
+          {
+            "actual": "leather",
+            "count": 4,
+            "predicted": "chiffon"
+          },
+          {
+            "actual": "leather",
+            "count": 8,
+            "predicted": "cotton"
+          },
+          {
+            "actual": "leather",
+            "count": 4,
+            "predicted": "denim"
+          },
+          {
+            "actual": "leather",
+            "count": 1,
+            "predicted": "knitted"
+          },
+          {
+            "actual": "leather",
+            "count": 87,
+            "predicted": "leather"
+          },
+          {
+            "actual": "leather",
+            "count": 3,
+            "predicted": "na"
+          },
+          {
+            "actual": "na",
+            "count": 8,
+            "predicted": "chiffon"
+          },
+          {
+            "actual": "na",
+            "count": 27,
+            "predicted": "cotton"
+          },
+          {
+            "actual": "na",
+            "count": 1,
+            "predicted": "denim"
+          },
+          {
+            "actual": "na",
+            "count": 3,
+            "predicted": "furry"
+          },
+          {
+            "actual": "na",
+            "count": 11,
+            "predicted": "knitted"
+          },
+          {
+            "actual": "na",
+            "count": 6,
+            "predicted": "leather"
+          },
+          {
+            "actual": "na",
+            "count": 1414,
+            "predicted": "na"
+          },
+          {
+            "actual": "other",
+            "count": 4,
+            "predicted": "cotton"
+          },
+          {
+            "actual": "other",
+            "count": 2,
+            "predicted": "denim"
+          },
+          {
+            "actual": "other",
+            "count": 1,
+            "predicted": "na"
+          }
+        ],
+        "excluded": 0,
+        "macro_f1": 0.7147771675711444,
+        "n": 5445,
+        "reason": null
+      },
+      "length": {
+        "accuracy": 0.9381898454746137,
+        "confusion": [
+          {
+            "actual": "long",
+            "count": 845,
+            "predicted": "long"
+          },
+          {
+            "actual": "long",
+            "count": 2,
+            "predicted": "na"
+          },
+          {
+            "actual": "long",
+            "count": 5,
+            "predicted": "three_point"
+          },
+          {
+            "actual": "long",
+            "count": 24,
+            "predicted": "three_quarter"
+          },
+          {
+            "actual": "medium_short",
+            "count": 1,
+            "predicted": "long"
+          },
+          {
+            "actual": "medium_short",
+            "count": 113,
+            "predicted": "medium_short"
+          },
+          {
+            "actual": "medium_short",
+            "count": 1,
+            "predicted": "na"
+          },
+          {
+            "actual": "medium_short",
+            "count": 19,
+            "predicted": "three_point"
+          },
+          {
+            "actual": "medium_short",
+            "count": 14,
+            "predicted": "three_quarter"
+          },
+          {
+            "actual": "na",
+            "count": 11,
+            "predicted": "long"
+          },
+          {
+            "actual": "three_point",
+            "count": 1,
+            "predicted": "long"
+          },
+          {
+            "actual": "three_point",
+            "count": 12,
+            "predicted": "medium_short"
+          },
+          {
+            "actual": "three_point",
+            "count": 2,
+            "predicted": "na"
+          },
+          {
+            "actual": "three_point",
+            "count": 690,
+            "predicted": "three_point"
+          },
+          {
+            "actual": "three_point",
+            "count": 2,
+            "predicted": "three_quarter"
+          },
+          {
+            "actual": "three_quarter",
+            "count": 13,
+            "predicted": "long"
+          },
+          {
+            "actual": "three_quarter",
+            "count": 2,
+            "predicted": "medium_short"
+          },
+          {
+            "actual": "three_quarter",
+            "count": 3,
+            "predicted": "three_point"
+          },
+          {
+            "actual": "three_quarter",
+            "count": 52,
+            "predicted": "three_quarter"
+          }
+        ],
+        "excluded": 3,
+        "macro_f1": 0.68005345057301,
+        "n": 1812,
+        "reason": null
+      },
+      "neckline": {
+        "accuracy": 0.8796909492273731,
+        "confusion": [
+          {
+            "actual": "lapel",
+            "count": 138,
+            "predicted": "lapel"
+          },
+          {
+            "actual": "lapel",
+            "count": 1,
+            "predicted": "na"
+          },
+          {
+            "actual": "lapel",
+            "count": 6,
+            "predicted": "round"
+          },
+          {
+            "actual": "lapel",
+            "count": 2,
+            "predicted": "standing"
+          },
+          {
+            "actual": "lapel",
+            "count": 9,
+            "predicted": "v_shape"
+          },
+          {
+            "actual": "na",
+            "count": 8,
+            "predicted": "lapel"
+          },
+          {
+            "actual": "na",
+            "count": 180,
+            "predicted": "na"
+          },
+          {
+            "actual": "na",
+            "count": 34,
+            "predicted": "round"
+          },
+          {
+            "actual": "na",
+            "count": 2,
+            "predicted": "square"
+          },
+          {
+            "actual": "na",
+            "count": 3,
+            "predicted": "standing"
+          },
+          {
+            "actual": "na",
+            "count": 4,
+            "predicted": "suspenders"
+          },
+          {
+            "actual": "na",
+            "count": 8,
+            "predicted": "v_shape"
+          },
+          {
+            "actual": "round",
+            "count": 1,
+            "predicted": "lapel"
+          },
+          {
+            "actual": "round",
+            "count": 4,
+            "predicted": "na"
+          },
+          {
+            "actual": "round",
+            "count": 952,
+            "predicted": "round"
+          },
+          {
+            "actual": "round",
+            "count": 1,
+            "predicted": "square"
+          },
+          {
+            "actual": "round",
+            "count": 7,
+            "predicted": "standing"
+          },
+          {
+            "actual": "round",
+            "count": 1,
+            "predicted": "suspenders"
+          },
+          {
+            "actual": "round",
+            "count": 15,
+            "predicted": "v_shape"
+          },
+          {
+            "actual": "square",
+            "count": 12,
+            "predicted": "round"
+          },
+          {
+            "actual": "square",
+            "count": 2,
+            "predicted": "square"
+          },
+          {
+            "actual": "square",
+            "count": 1,
+            "predicted": "v_shape"
+          },
+          {
+            "actual": "standing",
+            "count": 2,
+            "predicted": "lapel"
+          },
+          {
+            "actual": "standing",
+            "count": 10,
+            "predicted": "round"
+          },
+          {
+            "actual": "standing",
+            "count": 20,
+            "predicted": "standing"
+          },
+          {
+            "actual": "standing",
+            "count": 1,
+            "predicted": "v_shape"
+          },
+          {
+            "actual": "suspenders",
+            "count": 5,
+            "predicted": "na"
+          },
+          {
+            "actual": "suspenders",
+            "count": 29,
+            "predicted": "round"
+          },
+          {
+            "actual": "suspenders",
+            "count": 3,
+            "predicted": "square"
+          },
+          {
+            "actual": "suspenders",
+            "count": 140,
+            "predicted": "suspenders"
+          },
+          {
+            "actual": "suspenders",
+            "count": 14,
+            "predicted": "v_shape"
+          },
+          {
+            "actual": "v_shape",
+            "count": 2,
+            "predicted": "lapel"
+          },
+          {
+            "actual": "v_shape",
+            "count": 27,
+            "predicted": "round"
+          },
+          {
+            "actual": "v_shape",
+            "count": 6,
+            "predicted": "suspenders"
+          },
+          {
+            "actual": "v_shape",
+            "count": 162,
+            "predicted": "v_shape"
+          }
+        ],
+        "excluded": 3,
+        "macro_f1": 0.7243701701055765,
+        "n": 1812,
+        "reason": null
+      },
+      "pattern": {
+        "accuracy": 0.9101928374655648,
+        "confusion": [
+          {
+            "actual": "color_block",
+            "count": 18,
+            "predicted": "color_block"
+          },
+          {
+            "actual": "color_block",
+            "count": 2,
+            "predicted": "graphic"
+          },
+          {
+            "actual": "color_block",
+            "count": 1,
+            "predicted": "na"
+          },
+          {
+            "actual": "color_block",
+            "count": 5,
+            "predicted": "other"
+          },
+          {
+            "actual": "color_block",
+            "count": 21,
+            "predicted": "pure_color"
+          },
+          {
+            "actual": "floral",
+            "count": 112,
+            "predicted": "floral"
+          },
+          {
+            "actual": "floral",
+            "count": 33,
+            "predicted": "graphic"
+          },
+          {
+            "actual": "floral",
+            "count": 2,
+            "predicted": "pure_color"
+          },
+          {
+            "actual": "graphic",
+            "count": 8,
+            "predicted": "floral"
+          },
+          {
+            "actual": "graphic",
+            "count": 672,
+            "predicted": "graphic"
+          },
+          {
+            "actual": "graphic",
+            "count": 3,
+            "predicted": "lattice"
+          },
+          {
+            "actual": "graphic",
+            "count": 12,
+            "predicted": "na"
+          },
+          {
+            "actual": "graphic",
+            "count": 12,
+            "predicted": "other"
+          },
+          {
+            "actual": "graphic",
+            "count": 92,
+            "predicted": "pure_color"
+          },
+          {
+            "actual": "graphic",
+            "count": 7,
+            "predicted": "striped"
+          },
+          {
+            "actual": "lattice",
+            "count": 1,
+            "predicted": "graphic"
+          },
+          {
+            "actual": "lattice",
+            "count": 63,
+            "predicted": "lattice"
+          },
+          {
+            "actual": "lattice",
+            "count": 2,
+            "predicted": "na"
+          },
+          {
+            "actual": "lattice",
+            "count": 12,
+            "predicted": "pure_color"
+          },
+          {
+            "actual": "na",
+            "count": 7,
+            "predicted": "graphic"
+          },
+          {
+            "actual": "na",
+            "count": 1415,
+            "predicted": "na"
+          },
+          {
+            "actual": "na",
+            "count": 7,
+            "predicted": "other"
+          },
+          {
+            "actual": "na",
+            "count": 39,
+            "predicted": "pure_color"
+          },
+          {
+            "actual": "na",
+            "count": 2,
+            "predicted": "striped"
+          },
+          {
+            "actual": "other",
+            "count": 1,
+            "predicted": "color_block"
+          },
+          {
+            "actual": "other",
+            "count": 13,
+            "predicted": "graphic"
+          },
+          {
+            "actual": "other",
+            "count": 2,
+            "predicted": "na"
+          },
+          {
+            "actual": "other",
+            "count": 69,
+            "predicted": "other"
+          },
+          {
+            "actual": "other",
+            "count": 32,
+            "predicted": "pure_color"
+          },
+          {
+            "actual": "other",
+            "count": 4,
+            "predicted": "striped"
+          },
+          {
+            "actual": "pure_color",
+            "count": 3,
+            "predicted": "color_block"
+          },
+          {
+            "actual": "pure_color",
+            "count": 2,
+            "predicted": "floral"
+          },
+          {
+            "actual": "pure_color",
+            "count": 48,
+            "predicted": "graphic"
+          },
+          {
+            "actual": "pure_color",
+            "count": 3,
+            "predicted": "lattice"
+          },
+          {
+            "actual": "pure_color",
+            "count": 21,
+            "predicted": "na"
+          },
+          {
+            "actual": "pure_color",
+            "count": 65,
+            "predicted": "other"
+          },
+          {
+            "actual": "pure_color",
+            "count": 2461,
+            "predicted": "pure_color"
+          },
+          {
+            "actual": "pure_color",
+            "count": 4,
+            "predicted": "striped"
+          },
+          {
+            "actual": "striped",
+            "count": 10,
+            "predicted": "graphic"
+          },
+          {
+            "actual": "striped",
+            "count": 5,
+            "predicted": "na"
+          },
+          {
+            "actual": "striped",
+            "count": 2,
+            "predicted": "other"
+          },
+          {
+            "actual": "striped",
+            "count": 6,
+            "predicted": "pure_color"
+          },
+          {
+            "actual": "striped",
+            "count": 146,
+            "predicted": "striped"
+          }
+        ],
+        "excluded": 0,
+        "macro_f1": 0.790822463769781,
+        "n": 5445,
+        "reason": null
+      },
+      "sleeve_length": {
+        "accuracy": 0.9359823399558499,
+        "confusion": [
+          {
+            "actual": "long",
+            "count": 580,
+            "predicted": "long"
+          },
+          {
+            "actual": "long",
+            "count": 21,
+            "predicted": "medium"
+          },
+          {
+            "actual": "long",
+            "count": 6,
+            "predicted": "short"
+          },
+          {
+            "actual": "long",
+            "count": 2,
+            "predicted": "sleeveless"
+          },
+          {
+            "actual": "medium",
+            "count": 39,
+            "predicted": "long"
+          },
+          {
+            "actual": "medium",
+            "count": 53,
+            "predicted": "medium"
+          },
+          {
+            "actual": "medium",
+            "count": 12,
+            "predicted": "short"
+          },
+          {
+            "actual": "medium",
+            "count": 2,
+            "predicted": "sleeveless"
+          },
+          {
+            "actual": "na",
+            "count": 3,
+            "predicted": "sleeveless"
+          },
+          {
+            "actual": "not_long",
+            "count": 1,
+            "predicted": "long"
+          },
+          {
+            "actual": "short",
+            "count": 2,
+            "predicted": "long"
+          },
+          {
+            "actual": "short",
+            "count": 11,
+            "predicted": "medium"
+          },
+          {
+            "actual": "short",
+            "count": 353,
+            "predicted": "short"
+          },
+          {
+            "actual": "short",
+            "count": 4,
+            "predicted": "sleeveless"
+          },
+          {
+            "actual": "sleeveless",
+            "count": 6,
+            "predicted": "long"
+          },
+          {
+            "actual": "sleeveless",
+            "count": 7,
+            "predicted": "short"
+          },
+          {
+            "actual": "sleeveless",
+            "count": 710,
+            "predicted": "sleeveless"
+          }
+        ],
+        "excluded": 3,
+        "macro_f1": 0.5699927030130701,
+        "n": 1812,
+        "reason": null
+      }
+    },
+    "heads": {},
+    "schema_validity": {
+      "n": 1815,
+      "valid": 1815,
+      "value": 1.0
+    }
+  },
+  "model": "smolvlm-rmo-v1-final",
+  "n_items": 1815,
+  "provenance": "predicted",
+  "schema_version": "1.0.0",
+  "seed": null,
+  "split": "test",
+  "stage": "perception",
+  "timestamp": "2026-09-10T20:22:11Z"
+}
