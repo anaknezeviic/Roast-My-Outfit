@@ -16,6 +16,7 @@ import pandas as pd
 
 from rmo import paths
 from rmo.config import load_perception_config
+from rmo.data.descriptions import describe_image
 from rmo.eval.metrics import metric_record, split_inputs, write_metric_record
 from rmo.eval.predictions import check_prediction_path, write_predictions
 from rmo.imaging import image_identity
@@ -71,6 +72,22 @@ _SHAPE_FIELDS: dict[str, tuple[str, str, tuple[GarmentSlot, ...]]] = {
 
 _SHAPE_HEADS = frozenset({"sleeve_length", "lower_length", "neckline"})
 
+_COLOR_SLOTS: tuple[GarmentSlot, ...] = (
+    GarmentSlot.upper,
+    GarmentSlot.outer,
+    GarmentSlot.lower,
+    GarmentSlot.dress,
+    GarmentSlot.romper,
+    GarmentSlot.footwear,
+    GarmentSlot.headwear,
+    GarmentSlot.neckwear,
+    GarmentSlot.eyewear,
+    GarmentSlot.bag,
+    GarmentSlot.belt,
+    GarmentSlot.socks,
+    GarmentSlot.gloves,
+    GarmentSlot.jewelry,
+)
 
 @dataclass(frozen=True)
 class FieldMetrics:
@@ -168,6 +185,17 @@ def _shape_value(
             return value.value
     return "na"
 
+def _color_value(
+    description: OutfitDescription,
+    slot: GarmentSlot,
+) -> str:
+    """Return the colour of the first garment in one slot, or ``na`` when absent."""
+    garments = description.by_slot(slot)
+    if not garments:
+        return "na"
+
+    color = garments[0].color
+    return color.value if color is not None else "na"
 
 def _prediction_map(
     descriptions: Sequence[OutfitDescription],
@@ -202,12 +230,26 @@ def evaluate_predictions(
         raise ValueError("has_shape must be a boolean column to mask unsupervised heads.")
 
     pairs: dict[str, tuple[list[str], list[str]]] = {
-        field: ([], []) for field in (*_SLOT_FIELDS, *_SHAPE_FIELDS)
+        field: ([], []) for field in ("color", *_SLOT_FIELDS, *_SHAPE_FIELDS)
     }
-    excluded: dict[str, int] = {field: 0 for field in (*_SLOT_FIELDS, *_SHAPE_FIELDS)}
+    excluded: dict[str, int] = {
+        field: 0 for field in ("color", *_SLOT_FIELDS, *_SHAPE_FIELDS)
+    }
     for image_id in sorted(expected_ids):
         row = labels.loc[image_id]
         description = predictions[image_id]
+        ground_truth = describe_image(image_id, row)
+        actual_color, predicted_color = pairs["color"]
+
+        for slot in _COLOR_SLOTS:
+            gt_garments = ground_truth.by_slot(slot)
+
+            if not gt_garments:
+                continue
+
+            actual_color.append(_color_value(ground_truth, slot))
+            predicted_color.append(_color_value(description, slot))
+
         for field, slot_columns in _SLOT_FIELDS.items():
             actual, predicted = pairs[field]
             for slots, column in slot_columns:
@@ -445,17 +487,24 @@ def run_evaluation(
     *,
     predictions_out: Path | None = None,
     cache_path: Path | None = None,
+    limit: int | None = None,
 ) -> EvaluationResult:
     """Run a perception model over the test split and log its metrics."""
     if predictions_out is not None:
         check_prediction_path(predictions_out)
+    
     test_ids = load_split("test")
+    
+    if limit is not None:
+        test_ids = set(sorted(test_ids)[:limit])
+    
     source = table_path or paths.data_root() / "processed" / "outfits.parquet"
     frame = pd.read_parquet(source)
     held_out = frame.loc[frame["image_id"].isin(test_ids)].copy()
     images = [paths.raw_dir() / "images" / f"{image_id}.jpg" for image_id in sorted(test_ids)]
     with_readouts = getattr(model, "predict_batch_with_readouts", None)
     readouts: dict[str, Mapping[str, str]] = {}
+    
     if with_readouts is not None:
         paired = with_readouts(images)
         descriptions = [description for description, _ in paired]
@@ -464,6 +513,7 @@ def run_evaluation(
         descriptions = _predict_with_cache(model, images, cache_path)
     else:
         descriptions = model.predict_batch(images)
+    
     if predictions_out is not None:
         write_predictions(
             descriptions,
@@ -477,6 +527,7 @@ def run_evaluation(
         if cache_path is not None:
             cache_path.unlink(missing_ok=True)
     result = evaluate_predictions(held_out, descriptions, test_ids)
+    
     if readouts:
         heads, heads_excluded = evaluate_readouts(held_out, readouts, test_ids)
         result = replace(result, heads=heads, heads_excluded=heads_excluded)
@@ -506,6 +557,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--predictions-out", type=Path, default=None)
     parser.add_argument("--cache", type=Path, default=None)
     parser.add_argument("--fresh", action="store_true")
+    parser.add_argument("--limit", type=int, default=None, help="Evaluate only the first N sorted test images.")
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s %(message)s")
@@ -525,8 +577,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         cache_path.unlink(missing_ok=True)
 
     result = run_evaluation(
-        model, predictions_out=args.predictions_out, cache_path=cache_path
+        model,
+        predictions_out=args.predictions_out,
+        cache_path=cache_path,
+        limit=args.limit,
     )
+    
     destination = args.metrics_out or paths.metrics_dir() / _metrics_filename(model.name)
     write_metric_record(
         perception_metric_record(result, model=model.name, config=_run_config(model)),
