@@ -3,7 +3,7 @@
     "random": 0.5
   },
   "config_hash": "ae0debab",
-  "git_sha": "dd86838a18c61c3605448b6f257f3f8831b7625d",
+  "git_sha": "f4e7fd0984d5c558be27a75553a0ccb05027e1fe",
   "inputs": null,
   "metrics": {
     "missingness": {
@@ -32,5 +32,5 @@
   "seed": 20260101,
   "split": "val",
   "stage": "scoring",
-  "timestamp": "2026-09-11T17:09:20Z"
+  "timestamp": "2026-09-11T17:29:49Z"
 }

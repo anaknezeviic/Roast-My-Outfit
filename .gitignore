@@ -117,6 +117,10 @@ models/smolvlm-rmo-v1/*
 !models/perception_cnn/
 !models/perception_cnn/cnn_multihead_v1.pt
 
+!models/scoring/
+models/scoring/*
+!models/scoring/logreg.json
+
 !models/README.md
 logs/
 results/**/*.tmp
